@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASX Stock Intelligence</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0a4d3c;
+            --secondary: #1a7f64;
+            --accent: #f4a261;
+            --positive: #2a9d8f;
+            --negative: #e76f51;
+            --bg-dark: #0f1419;
+            --bg-card: #1a1f2e;
+            --bg-input: #242938;
+            --text-primary: #e8e9ed;
+            --text-secondary: #9ca3af;
+            --border: #2d3748;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #1a1f2e 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .grain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.03;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='3' numOctaves='3' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            z-index: 1;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 4rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--accent) 0%, #e9c46a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            font-weight: 300;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .search-section {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 2.5rem;
+            margin-bottom: 3rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            animation: fadeInUp 0.8s ease-out 0.2s backwards;
+        }
+
+        .input-group {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            background: var(--bg-input);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: 'IBM Plex Sans', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 4px rgba(26, 127, 100, 0.1);
+        }
+
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: var(--bg-input);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .checkbox-wrapper:hover {
+            background: #2d3442;
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--secondary);
+        }
+
+        .checkbox-wrapper label {
+            margin: 0;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .purchase-price-section {
+            display: none;
+            animation: slideDown 0.4s ease-out;
+        }
+
+        .purchase-price-section.active {
+            display: block;
+        }
+
+        button {
+            width: 100%;
+            padding: 1.25rem;
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(26, 127, 100, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .results-section {
+            display: none;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .results-section.active {
+            display: block;
+        }
+
+        .price-card {
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
+            padding: 2rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(26, 127, 100, 0.3);
+        }
+
+        .price-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.8);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 0.5rem;
+        }
+
+        .price-value {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .position-card {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .position-item {
+            text-align: center;
+        }
+
+        .position-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .position-value {
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .positive {
+            color: var(--positive);
+        }
+
+        .negative {
+            color: var(--negative);
+        }
+
+        .news-section,
+        .analysis-section {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--accent);
+        }
+
+        .news-list {
+            list-style: none;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 1rem;
+        }
+
+        .news-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .news-list::-webkit-scrollbar-track {
+            background: var(--bg-input);
+            border-radius: 10px;
+        }
+
+        .news-list::-webkit-scrollbar-thumb {
+            background: var(--secondary);
+            border-radius: 10px;
+        }
+
+        .news-item {
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            background: var(--bg-input);
+            border-radius: 10px;
+            border-left: 3px solid var(--secondary);
+            transition: all 0.3s ease;
+        }
+
+        .news-item:hover {
+            background: #2d3442;
+            transform: translateX(5px);
+        }
+
+        .news-item a {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+
+        .article-status {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: var(--bg-input);
+            border-radius: 10px;
+        }
+
+        .status-icon {
+            font-size: 1.5rem;
+        }
+
+        .analysis-content {
+            background: var(--bg-input);
+            padding: 2rem;
+            border-radius: 16px;
+            line-height: 1.8;
+            font-size: 1.05rem;
+            white-space: pre-wrap;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .spinner {
+            border: 4px solid var(--bg-input);
+            border-top: 4px solid var(--secondary);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        .error {
+            background: rgba(231, 111, 81, 0.1);
+            border: 2px solid var(--negative);
+            padding: 1.5rem;
+            border-radius: 12px;
+            color: var(--negative);
+            margin-bottom: 2rem;
+        }
+
+        .success {
+            background: rgba(42, 157, 143, 0.1);
+            border: 2px solid var(--positive);
+            padding: 1.5rem;
+            border-radius: 12px;
+            color: var(--positive);
+            margin-bottom: 2rem;
+        }
+
+        .info {
+            background: rgba(244, 162, 97, 0.1);
+            border: 2px solid var(--accent);
+            padding: 1.5rem;
+            border-radius: 12px;
+            color: var(--accent);
+            margin-bottom: 2rem;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                max-height: 0;
+            }
+            to {
+                opacity: 1;
+                max-height: 200px;
+            }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .input-group {
+                grid-template-columns: 1fr;
+            }
+
+            .price-value {
+                font-size: 2.5rem;
+            }
+
+            .position-card {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="grain"></div>
+    
+    <div class="container">
+        <header>
+            <h1>ASX Intelligence</h1>
+            <p class="subtitle">Australian Stock Market Analysis</p>
+        </header>
+
+        <div class="search-section">
+            <div class="input-group">
+                <div class="input-wrapper">
+                    <label for="ticker">Stock Ticker</label>
+                    <input type="text" id="ticker" placeholder="e.g. CBA, BHP, CSL, WBC" autocomplete="off">
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="ownStock">
+                    <label for="ownStock">I own this stock</label>
+                </div>
+            </div>
+
+            <div class="purchase-price-section" id="purchasePriceSection">
+                <label for="purchasePrice">Your Purchase Price (AUD)</label>
+                <input type="number" id="purchasePrice" placeholder="0.00" step="0.01" min="0.01">
+            </div>
+
+            <button id="analyzeBtn" onclick="analyzeStock()">Analyze Stock</button>
+        </div>
+
+        <div id="messageContainer"></div>
+
+        <div class="results-section" id="resultsSection">
+            <div class="price-card" id="priceCard">
+                <div class="price-label">Current Price</div>
+                <div class="price-value" id="currentPrice">$0.00</div>
+            </div>
+
+            <div class="position-card" id="positionCard" style="display: none;">
+                <div class="position-item">
+                    <div class="position-label">Purchase Price</div>
+                    <div class="position-value" id="displayPurchasePrice">$0.00</div>
+                </div>
+                <div class="position-item">
+                    <div class="position-label">Gain/Loss</div>
+                    <div class="position-value" id="gainLoss">$0.00</div>
+                </div>
+                <div class="position-item">
+                    <div class="position-label">Return</div>
+                    <div class="position-value" id="returnPct">0.00%</div>
+                </div>
+            </div>
+
+            <div class="news-section">
+                <h2 class="section-title">📰 Recent News</h2>
+                <ul class="news-list" id="newsList"></ul>
+            </div>
+
+            <div id="articleStatusContainer"></div>
+
+            <div class="analysis-section">
+                <h2 class="section-title">🧠 AI Analysis</h2>
+                <div class="analysis-content" id="analysisContent">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Analyzing market sentiment and generating recommendations...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // CONFIGURATION
+        // ============================================
+        const API_BASE_URL = 'http://localhost:5000/api';
+
+        // ============================================
+        // UI EVENT HANDLERS
+        // ============================================
+        
+        document.getElementById('ownStock').addEventListener('change', function() {
+            const section = document.getElementById('purchasePriceSection');
+            if (this.checked) {
+                section.classList.add('active');
+            } else {
+                section.classList.remove('active');
+                document.getElementById('purchasePrice').value = '';
+            }
+        });
+
+        // Allow Enter key to trigger analysis
+        document.getElementById('ticker').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                analyzeStock();
+            }
+        });
+
+        // ============================================
+        // MESSAGE FUNCTIONS
+        // ============================================
+        
+        function showMessage(message, type = 'info') {
+            const container = document.getElementById('messageContainer');
+            container.innerHTML = `<div class="${type}">${message}</div>`;
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 5000);
+        }
+
+        function showError(message) {
+            showMessage(message, 'error');
+        }
+
+        function showSuccess(message) {
+            showMessage(message, 'success');
+        }
+
+        function showInfo(message) {
+            showMessage(message, 'info');
+        }
+
+        // ============================================
+        // MAIN ANALYSIS FUNCTION
+        // ============================================
+        
+        async function analyzeStock() {
+            const ticker = document.getElementById('ticker').value.trim().toUpperCase();
+            const ownStock = document.getElementById('ownStock').checked;
+            const purchasePrice = ownStock ? parseFloat(document.getElementById('purchasePrice').value) : null;
+
+            // Validation
+            if (!ticker) {
+                showError('Please enter a stock ticker');
+                return;
+            }
+
+            if (ownStock && (!purchasePrice || purchasePrice <= 0)) {
+                showError('Please enter a valid purchase price');
+                return;
+            }
+
+            // Disable button
+            const btn = document.getElementById('analyzeBtn');
+            btn.disabled = true;
+            btn.textContent = 'Analyzing...';
+
+            // Show results section
+            document.getElementById('resultsSection').classList.add('active');
+            document.getElementById('analysisContent').innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Analyzing ${ticker}... This may take a minute.</p>
+                </div>
+            `;
+
+            try {
+                // Use the full analysis endpoint
+                const response = await fetch(`${API_BASE_URL}/full-analysis`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        ticker: ticker,
+                        purchase_price: purchasePrice,
+                        max_articles: 10
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    throw new Error(data.error || 'Analysis failed');
+                }
+
+                // Display all results
+                displayResults(data, purchasePrice);
+                showSuccess(`Analysis complete! Analyzed ${data.articles_extracted} articles.`);
+
+            } catch (error) {
+                showError(`Error: ${error.message}`);
+                console.error('Analysis error:', error);
+                document.getElementById('analysisContent').textContent = 
+                    `Failed to complete analysis: ${error.message}`;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Analyze Stock';
+            }
+        }
+
+        // ============================================
+        // DISPLAY FUNCTIONS
+        // ============================================
+        
+        function displayResults(data, purchasePrice) {
+            // Display price
+            document.getElementById('currentPrice').textContent = `$${data.price.toFixed(2)}`;
+
+            // Display position if applicable
+            if (purchasePrice && data.position) {
+                const pos = data.position;
+                document.getElementById('positionCard').style.display = 'grid';
+                document.getElementById('displayPurchasePrice').textContent = 
+                    `$${pos.purchase_price.toFixed(2)}`;
+
+                const gainLossEl = document.getElementById('gainLoss');
+                gainLossEl.textContent = `$${Math.abs(pos.gain_loss).toFixed(2)}`;
+                gainLossEl.className = 'position-value ' + 
+                    (pos.gain_loss >= 0 ? 'positive' : 'negative');
+
+                const returnPctEl = document.getElementById('returnPct');
+                returnPctEl.textContent = 
+                    `${pos.gain_loss_pct >= 0 ? '+' : ''}${pos.gain_loss_pct.toFixed(2)}%`;
+                returnPctEl.className = 'position-value ' + 
+                    (pos.gain_loss_pct >= 0 ? 'positive' : 'negative');
+            } else {
+                document.getElementById('positionCard').style.display = 'none';
+            }
+
+            // Display news links
+            displayNews(data.news_links);
+
+            // Display crawl statuses
+            displayCrawlStatuses(data.crawl_statuses);
+
+            // Display analysis
+            document.getElementById('analysisContent').textContent = data.analysis;
+        }
+
+        function displayNews(links) {
+            const newsList = document.getElementById('newsList');
+            newsList.innerHTML = '';
+
+            if (!links || links.length === 0) {
+                newsList.innerHTML = '<li class="news-item">No news articles found</li>';
+                return;
+            }
+
+            links.slice(0, 15).forEach((link, index) => {
+                const li = document.createElement('li');
+                li.className = 'news-item';
+                li.innerHTML = `<a href="${link}" target="_blank" rel="noopener">${index + 1}. ${link}</a>`;
+                newsList.appendChild(li);
+            });
+        }
+
+        function displayCrawlStatuses(statuses) {
+            const container = document.getElementById('articleStatusContainer');
+            container.innerHTML = '';
+
+            if (!statuses || statuses.length === 0) {
+                return;
+            }
+
+            statuses.forEach(status => {
+                const div = document.createElement('div');
+                div.className = 'article-status';
+
+                if (status.success) {
+                    div.innerHTML = `
+                        <div class="status-icon">✅</div>
+                        <div>Article ${status.index}: Successfully extracted (${status.length} chars)</div>
+                    `;
+                } else {
+                    div.innerHTML = `
+                        <div class="status-icon">❌</div>
+                        <div>Article ${status.index}: ${status.error || 'Failed to extract'}</div>
+                    `;
+                }
+
+                container.appendChild(div);
+            });
+        }
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        
+        // Check if backend is running on page load
+        async function checkBackend() {
+            try {
+                const response = await fetch(`${API_BASE_URL.replace('/api', '')}/health`);
+                const data = await response.json();
+                
+                if (!data.groq_api_configured) {
+                    showInfo('⚠️ Backend is running but GROQ_API_KEY is not configured. Add your API key to app.py');
+                }
+            } catch (error) {
+                showError('⚠️ Backend server is not running. Please start app.py first.');
+            }
+        }
+
+        // Run on page load
+        checkBackend();
+    </script>
+</body>
+</html>
