@@ -44,167 +44,247 @@ def load_custom_css():
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Questrial&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cal+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
     <style>
         /* Base Styles */
         * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
             font-family: 'Questrial', sans-serif !important;
         }
         
         :root {
-            --primary-bg: #FBFEF9;
-            --primary-blue: #0C6291;
-            --primary-dark: #000004;
+            --primary-bg: #FFFCF9;
+            --secondary-bg: #e8e5e1;
+            --primary-blue: #235789;
+            --primary-dark: #080705;
+            --glass-bg: rgba(255, 252, 249, 0.4);
+            --glass-border: rgba(35, 87, 137, 0.1);
         }
         
         /* Hide Streamlit branding */
         #MainMenu {visibility: hidden;}
         footer {visibility: hidden;}
         header {visibility: hidden;}
+        .stDeployButton {visibility: hidden;}
+        
+        /* Body and Main Container */
+        body {
+            background: linear-gradient(135deg, var(--primary-bg) 0%, var(--secondary-bg) 100%);
+            color: var(--primary-dark);
+            overflow-x: hidden;
+        }
         
         .main {
-            background-color: var(--primary-bg);
+            background: transparent;
             padding: 0;
         }
         
-        /* Hero Banner */
-        .hero-banner {
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #0C6291 0%, #000004 100%);
-            margin: -5rem -5rem 0 -5rem;
-            position: relative;
-            overflow: hidden;
+        .block-container {
+            padding: 2rem 3rem;
+            max-width: 100%;
         }
         
-        .hero-banner::before {
-            content: '';
-            position: absolute;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(251,254,249,0.1) 1px, transparent 1px);
-            background-size: 30px 30px;
-            animation: drift 60s linear infinite;
+        /* Welcome Screen / Hero */
+        .welcome-screen {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            padding: 60px 20px;
+            z-index: 100;
+            animation: fadeIn 1s ease-out;
         }
         
-        @keyframes drift {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(30px, 30px); }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -45%);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
         }
         
         .hero-title {
             font-size: 8rem;
-            color: var(--primary-bg);
-            font-weight: 400;
-            letter-spacing: 0.2em;
+            color: var(--primary-blue);
+            font-weight: 600;
+            letter-spacing: 0.05em;
             text-align: center;
-            z-index: 10;
-            position: relative;
-            text-shadow: 0 0 80px rgba(251,254,249,0.5);
-            animation: fadeInScale 1.5s ease-out;
+            margin-bottom: 30px;
+            text-shadow: 0 4px 20px rgba(35, 87, 137, 0.2);
         }
         
-        @keyframes fadeInScale {
+        .hero-subtitle {
+            font-size: 1.5rem;
+            color: var(--primary-dark);
+            opacity: 0.6;
+            font-style: italic;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* App Container - Glassmorphic */
+        .app-container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(8, 7, 5, 0.15);
+            padding: 32px;
+            margin: 20px;
+            animation: appOpen 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        
+        @keyframes appOpen {
             0% {
                 opacity: 0;
-                transform: scale(0.8);
+                transform: scale(0.9) translateY(30px);
             }
             100% {
                 opacity: 1;
-                transform: scale(1);
+                transform: scale(1) translateY(0);
             }
         }
         
-        /* Dashboard Section */
-        .dashboard-section {
-            padding: 4rem 2rem;
-            background-color: var(--primary-bg);
-        }
-        
+        /* Section Titles */
         .section-title {
             font-size: 2.5rem;
-            color: var(--primary-dark);
+            color: var(--primary-blue);
             margin-bottom: 2rem;
             text-align: center;
             letter-spacing: 0.05em;
+            font-weight: 500;
         }
         
-        /* Pill Inputs and Buttons */
-        .stTextInput input {
+        /* Glass Cards */
+        .glass-card {
+            background: rgba(255, 252, 249, 0.6);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(35, 87, 137, 0.15);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(8, 7, 5, 0.08);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            margin-bottom: 1rem;
+        }
+        
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(8, 7, 5, 0.12);
+            border-color: rgba(35, 87, 137, 0.25);
+        }
+        
+        /* Pill Inputs */
+        .stTextInput input, .stNumberInput input {
+            background: rgba(255, 252, 249, 0.8) !important;
+            backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(35, 87, 137, 0.2) !important;
             border-radius: 50px !important;
-            border: 2px solid var(--primary-blue) !important;
-            padding: 0.75rem 1.5rem !important;
-            font-size: 1rem !important;
-            background-color: white !important;
+            padding: 14px 24px !important;
+            font-size: 16px !important;
             color: var(--primary-dark) !important;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+            box-shadow: 0 4px 16px rgba(35, 87, 137, 0.05) !important;
         }
         
-        .stTextInput input:focus {
-            box-shadow: 0 0 0 3px rgba(12, 98, 145, 0.2) !important;
+        .stTextInput input:focus, .stNumberInput input:focus {
+            background: rgba(255, 252, 249, 0.95) !important;
             border-color: var(--primary-blue) !important;
+            box-shadow: 0 8px 24px rgba(35, 87, 137, 0.15) !important;
+            outline: none !important;
         }
         
+        /* Pill Buttons */
         .stButton button {
+            background: rgba(35, 87, 137, 0.15) !important;
+            backdrop-filter: blur(25px) !important;
+            border: 1px solid rgba(35, 87, 137, 0.2) !important;
+            color: var(--primary-blue) !important;
             border-radius: 50px !important;
-            background-color: var(--primary-blue) !important;
-            color: var(--primary-bg) !important;
-            border: none !important;
-            padding: 0.75rem 2rem !important;
-            font-size: 1rem !important;
+            padding: 14px 32px !important;
+            font-size: 16px !important;
             font-weight: 500 !important;
-            transition: all 0.3s ease !important;
-            letter-spacing: 0.05em;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+            box-shadow: 0 4px 16px rgba(35, 87, 137, 0.1) !important;
+            letter-spacing: 0.02em !important;
         }
         
         .stButton button:hover {
-            background-color: var(--primary-dark) !important;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,4,0.3) !important;
+            background: rgba(35, 87, 137, 0.25) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 24px rgba(35, 87, 137, 0.2) !important;
         }
         
-        /* Floating Toolbar */
+        .stButton button:active {
+            transform: translateY(0) !important;
+        }
+        
+        /* Floating Toolbar - Glassmorphic */
         .floating-toolbar {
             position: fixed;
-            bottom: 2rem;
+            bottom: 24px;
             left: 50%;
             transform: translateX(-50%);
-            background: white;
+            background: rgba(255, 252, 249, 0.4);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid var(--glass-border);
             border-radius: 50px;
-            padding: 1rem 2rem;
-            box-shadow: 0 10px 40px rgba(0,0,4,0.2);
+            padding: 12px 24px;
+            box-shadow: 0 16px 40px rgba(8, 7, 5, 0.2);
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 12px;
             z-index: 1000;
-            border: 2px solid var(--primary-blue);
+            animation: slideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         
-        /* Cards */
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translate(-50%, 20px);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+        
+        /* Metric Cards - Glassmorphic */
         .metric-card {
-            background: white;
+            background: rgba(255, 252, 249, 0.5);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(35, 87, 137, 0.12);
             border-radius: 20px;
             padding: 1.5rem;
-            box-shadow: 0 4px 15px rgba(0,0,4,0.08);
-            border: 1px solid rgba(12, 98, 145, 0.1);
-            transition: all 0.3s ease;
+            box-shadow: 0 8px 32px rgba(8, 7, 5, 0.08);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             margin-bottom: 1rem;
         }
         
         .metric-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,4,0.15);
+            box-shadow: 0 12px 40px rgba(8, 7, 5, 0.12);
+            border-color: rgba(35, 87, 137, 0.2);
         }
         
         .metric-label {
             color: var(--primary-blue);
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             text-transform: uppercase;
             letter-spacing: 0.1em;
             margin-bottom: 0.5rem;
+            opacity: 0.9;
         }
         
         .metric-value {
@@ -213,26 +293,31 @@ def load_custom_css():
             font-weight: 500;
         }
         
-        /* Stock Analysis Page */
+        /* Stock Analysis Page Header */
         .analysis-header {
-            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-dark) 100%);
-            color: white;
+            background: rgba(35, 87, 137, 0.15);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(35, 87, 137, 0.2);
+            color: var(--primary-blue);
             padding: 3rem 2rem;
             border-radius: 25px;
             margin-bottom: 2rem;
+            box-shadow: 0 16px 48px rgba(35, 87, 137, 0.15);
         }
         
         .stock-name {
             font-size: 3rem;
             margin-bottom: 0.5rem;
+            font-weight: 500;
         }
         
         .company-name {
             font-size: 1.5rem;
-            opacity: 0.9;
+            opacity: 0.8;
         }
         
-        /* Recommendation Badge */
+        /* Recommendation Badge - Glassmorphic */
         .recommendation-badge {
             display: inline-block;
             padding: 1rem 2.5rem;
@@ -241,30 +326,50 @@ def load_custom_css():
             font-weight: 500;
             letter-spacing: 0.05em;
             margin: 1rem 0;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            box-shadow: 0 8px 32px rgba(8, 7, 5, 0.15);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .recommendation-badge:hover {
+            transform: scale(1.05);
         }
         
         .rec-buy {
-            background: linear-gradient(135deg, #00C851 0%, #007E33 100%);
-            color: white;
+            background: rgba(16, 185, 129, 0.2);
+            border: 2px solid rgba(16, 185, 129, 0.4);
+            color: #059669;
         }
         
         .rec-sell {
-            background: linear-gradient(135deg, #ff4444 0%, #CC0000 100%);
-            color: white;
+            background: rgba(239, 68, 68, 0.2);
+            border: 2px solid rgba(239, 68, 68, 0.4);
+            color: #DC2626;
         }
         
         .rec-hold {
-            background: linear-gradient(135deg, #ffbb33 0%, #FF8800 100%);
-            color: white;
+            background: rgba(251, 191, 36, 0.2);
+            border: 2px solid rgba(251, 191, 36, 0.4);
+            color: #D97706;
         }
         
-        /* Chart Containers */
+        /* Chart Containers - Glassmorphic */
         .chart-container {
-            background: white;
+            background: rgba(255, 252, 249, 0.6);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(35, 87, 137, 0.12);
             border-radius: 20px;
             padding: 1.5rem;
-            box-shadow: 0 4px 15px rgba(0,0,4,0.08);
+            box-shadow: 0 8px 32px rgba(8, 7, 5, 0.08);
             margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .chart-container:hover {
+            border-color: rgba(35, 87, 137, 0.2);
+            box-shadow: 0 12px 40px rgba(8, 7, 5, 0.12);
         }
         
         .chart-title {
@@ -274,50 +379,60 @@ def load_custom_css():
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            font-weight: 500;
         }
         
-        /* Expandable Section */
-        .expandable-section {
-            margin-top: 2rem;
-            text-align: center;
-        }
-        
-        /* Alert Boxes */
+        /* Alert Boxes - Glassmorphic */
         .alert-box {
+            background: rgba(255, 252, 249, 0.5);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border-radius: 15px;
             padding: 1rem 1.5rem;
             margin: 1rem 0;
             display: flex;
             align-items: center;
             gap: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .alert-box:hover {
+            transform: translateX(5px);
         }
         
         .alert-warning {
-            background: rgba(255, 193, 7, 0.1);
-            border-left: 4px solid #FFC107;
-            color: #856404;
+            border-left: 4px solid #FBBF24;
+            background: rgba(251, 191, 36, 0.1);
+            color: #92400E;
         }
         
         .alert-info {
-            background: rgba(12, 98, 145, 0.1);
             border-left: 4px solid var(--primary-blue);
+            background: rgba(35, 87, 137, 0.1);
             color: var(--primary-blue);
+        }
+        
+        .alert-success {
+            border-left: 4px solid #10B981;
+            background: rgba(16, 185, 129, 0.1);
+            color: #065F46;
         }
         
         /* Progress Indicators */
         .progress-bar {
             height: 8px;
-            background: rgba(12, 98, 145, 0.2);
+            background: rgba(35, 87, 137, 0.15);
             border-radius: 10px;
             overflow: hidden;
             margin: 1rem 0;
+            backdrop-filter: blur(10px);
         }
         
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--primary-blue) 0%, var(--primary-dark) 100%);
+            background: linear-gradient(90deg, var(--primary-blue) 0%, #1a4368 100%);
             border-radius: 10px;
-            transition: width 0.5s ease;
+            transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         
         /* Stat Grid */
@@ -328,41 +443,161 @@ def load_custom_css():
             margin: 2rem 0;
         }
         
-        /* Hide default streamlit elements */
+        /* Expandable Section */
+        .expandable-section {
+            margin-top: 2rem;
+            text-align: center;
+        }
+        
+        /* Smooth Scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(35, 87, 137, 0.05);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(35, 87, 137, 0.3);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(35, 87, 137, 0.5);
+        }
+        
+        /* Spinner Override */
         .stSpinner > div {
             border-top-color: var(--primary-blue) !important;
         }
         
-        /* Tab styling */
+        /* Tab Styling - Glassmorphic */
         .stTabs [data-baseweb="tab-list"] {
-            gap: 2rem;
+            gap: 8px;
+            background: rgba(255, 252, 249, 0.3);
+            backdrop-filter: blur(20px);
+            padding: 8px;
+            border-radius: 50px;
+            border: 1px solid rgba(35, 87, 137, 0.1);
         }
         
         .stTabs [data-baseweb="tab"] {
-            border-radius: 20px 20px 0 0;
-            padding: 1rem 2rem;
-            background-color: transparent;
-            border: none;
-            color: var(--primary-dark);
+            border-radius: 50px !important;
+            padding: 12px 24px !important;
+            background: transparent !important;
+            border: none !important;
+            color: var(--primary-dark) !important;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+            font-weight: 500 !important;
         }
         
         .stTabs [aria-selected="true"] {
-            background-color: var(--primary-blue);
-            color: white;
+            background: rgba(35, 87, 137, 0.15) !important;
+            color: var(--primary-blue) !important;
+            box-shadow: 0 4px 12px rgba(35, 87, 137, 0.15) !important;
         }
         
-        /* Number input styling */
-        .stNumberInput input {
-            border-radius: 50px !important;
-            border: 2px solid var(--primary-blue) !important;
-            padding: 0.75rem 1.5rem !important;
+        .stTabs [data-baseweb="tab"]:hover {
+            background: rgba(35, 87, 137, 0.08) !important;
         }
         
-        /* Selectbox styling */
+        /* Selectbox Styling */
         .stSelectbox select {
+            background: rgba(255, 252, 249, 0.8) !important;
+            backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(35, 87, 137, 0.2) !important;
             border-radius: 50px !important;
-            border: 2px solid var(--primary-blue) !important;
-            padding: 0.75rem 1.5rem !important;
+            padding: 14px 24px !important;
+            color: var(--primary-dark) !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .stSelectbox select:focus {
+            border-color: var(--primary-blue) !important;
+            box-shadow: 0 8px 24px rgba(35, 87, 137, 0.15) !important;
+        }
+        
+        /* Checkbox Styling */
+        .stCheckbox {
+            color: var(--primary-dark) !important;
+        }
+        
+        .stCheckbox label {
+            font-size: 16px !important;
+        }
+        
+        /* Expander Styling */
+        .streamlit-expanderHeader {
+            background: rgba(255, 252, 249, 0.5) !important;
+            backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(35, 87, 137, 0.12) !important;
+            border-radius: 15px !important;
+            font-weight: 500 !important;
+            color: var(--primary-blue) !important;
+            transition: all 0.3s ease !important;
+        }
+        
+        .streamlit-expanderHeader:hover {
+            border-color: rgba(35, 87, 137, 0.25) !important;
+            background: rgba(255, 252, 249, 0.7) !important;
+        }
+        
+        /* Success/Error/Warning Messages */
+        .stSuccess, .stError, .stWarning, .stInfo {
+            background: rgba(255, 252, 249, 0.6) !important;
+            backdrop-filter: blur(20px) !important;
+            border-radius: 15px !important;
+            border: none !important;
+            box-shadow: 0 8px 24px rgba(8, 7, 5, 0.08) !important;
+        }
+        
+        /* Loading Animation */
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 0.6;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+        
+        .loading-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        /* Fade In Animation for Cards */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        /* Hover Glow Effect */
+        .glow-on-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .glow-on-hover:hover {
+            box-shadow: 0 0 20px rgba(35, 87, 137, 0.3), 
+                        0 0 40px rgba(35, 87, 137, 0.2);
         }
     </style>
     """, unsafe_allow_html=True)
@@ -708,14 +943,15 @@ def main():
     
     # Hero Banner
     st.markdown("""
-        <div class="hero-banner">
+        <div class="welcome-screen">
             <h1 class="hero-title">STOCKIFY</h1>
+            <p class="hero-subtitle">Australian Stock Market Intelligence</p>
         </div>
     """, unsafe_allow_html=True)
     
     # Dashboard Section
     if not st.session_state.show_analysis:
-        st.markdown('<div class="dashboard-section">', unsafe_allow_html=True)
+        st.markdown('<div class="app-container">', unsafe_allow_html=True)
         
         st.markdown('<h2 class="section-title">Market Overview</h2>', unsafe_allow_html=True)
         
@@ -728,31 +964,31 @@ def main():
         col1, col2 = st.columns(2)
         
         with col1:
-            st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-            st.markdown('<div class="chart-title"><i class="bi bi-arrow-up-circle-fill" style="color: #00C851;"></i> Top Gainers</div>', unsafe_allow_html=True)
+            st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+            st.markdown('<div class="chart-title"><i class="bi bi-arrow-up-circle-fill" style="color: #10B981;"></i> Top Gainers</div>', unsafe_allow_html=True)
             for g in gainers:
                 st.markdown(f"""
                     <div class="metric-card">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 1.2rem; color: var(--primary-dark);">{g['ticker']}</span>
-                            <span style="font-size: 1.5rem; color: #00C851; font-weight: 500;">+{g['change']}%</span>
+                            <span style="font-size: 1.2rem; color: var(--primary-dark); font-weight: 500;">{g['ticker']}</span>
+                            <span style="font-size: 1.5rem; color: #10B981; font-weight: 500;">+{g['change']}%</span>
                         </div>
-                        <div style="color: var(--primary-blue); margin-top: 0.5rem;">${g['price']}</div>
+                        <div style="color: var(--primary-blue); margin-top: 0.5rem; opacity: 0.8;">${g['price']}</div>
                     </div>
                 """, unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
         
         with col2:
-            st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-            st.markdown('<div class="chart-title"><i class="bi bi-arrow-down-circle-fill" style="color: #ff4444;"></i> Top Losers</div>', unsafe_allow_html=True)
+            st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+            st.markdown('<div class="chart-title"><i class="bi bi-arrow-down-circle-fill" style="color: #EF4444;"></i> Top Losers</div>', unsafe_allow_html=True)
             for l in losers:
                 st.markdown(f"""
                     <div class="metric-card">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 1.2rem; color: var(--primary-dark);">{l['ticker']}</span>
-                            <span style="font-size: 1.5rem; color: #ff4444; font-weight: 500;">{l['change']}%</span>
+                            <span style="font-size: 1.2rem; color: var(--primary-dark); font-weight: 500;">{l['ticker']}</span>
+                            <span style="font-size: 1.5rem; color: #EF4444; font-weight: 500;">{l['change']}%</span>
                         </div>
-                        <div style="color: var(--primary-blue); margin-top: 0.5rem;">${l['price']}</div>
+                        <div style="color: var(--primary-blue); margin-top: 0.5rem; opacity: 0.8;">${l['price']}</div>
                     </div>
                 """, unsafe_allow_html=True)
             st.markdown('</div>', unsafe_allow_html=True)
