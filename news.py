@@ -61,8 +61,8 @@ def load_custom_css():
             --secondary-bg: #e8e5e1;
             --primary-blue: #235789;
             --primary-dark: #080705;
-            --glass-bg: rgba(255, 252, 249, 0.4);
-            --glass-border: rgba(35, 87, 137, 0.1);
+            --glass-bg: rgba(255, 252, 249, 0.6);
+            --glass-border: rgba(35, 87, 137, 0.12);
         }
         
         /* Hide Streamlit branding */
@@ -84,31 +84,21 @@ def load_custom_css():
         }
         
         .block-container {
-            padding: 2rem 3rem;
+            padding: 0;
             max-width: 100%;
         }
         
-        /* Welcome Screen / Hero */
-        .welcome-screen {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            padding: 60px 20px;
-            z-index: 100;
-            animation: fadeIn 1s ease-out;
-        }
-        
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translate(-50%, -45%);
-            }
-            to {
-                opacity: 1;
-                transform: translate(-50%, -50%);
-            }
+        /* Welcome Hero - Fixed Position */
+        .hero-section {
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+            pointer-events: none;
         }
         
         .hero-title {
@@ -116,337 +106,429 @@ def load_custom_css():
             color: var(--primary-blue);
             font-weight: 600;
             letter-spacing: 0.05em;
-            text-align: center;
-            margin-bottom: 30px;
             text-shadow: 0 4px 20px rgba(35, 87, 137, 0.2);
+            animation: fadeIn 1.2s ease-out;
         }
         
         .hero-subtitle {
             font-size: 1.5rem;
             color: var(--primary-dark);
             opacity: 0.6;
-            font-style: italic;
-            max-width: 600px;
-            margin: 0 auto;
+            margin-top: 1rem;
+            animation: fadeIn 1.5s ease-out;
         }
         
-        /* App Container - Glassmorphic */
-        .app-container {
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Content Feed Container */
+        .content-feed {
+            position: relative;
+            z-index: 10;
+            max-width: 1400px;
+            margin: -50vh auto 0;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+        
+        /* Masonry Grid for Cards */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        /* Card Sizes */
+        .card-small {
+            grid-row: span 1;
+        }
+        
+        .card-medium {
+            grid-row: span 2;
+        }
+        
+        .card-large {
+            grid-row: span 3;
+        }
+        
+        .card-full {
+            grid-column: 1 / -1;
+        }
+        
+        /* Glass Card Base */
+        .feed-card {
             background: var(--glass-bg);
             backdrop-filter: blur(40px);
             -webkit-backdrop-filter: blur(40px);
             border: 1px solid var(--glass-border);
             border-radius: 24px;
-            box-shadow: 0 20px 60px rgba(8, 7, 5, 0.15);
-            padding: 32px;
-            margin: 20px;
-            animation: appOpen 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        }
-        
-        @keyframes appOpen {
-            0% {
-                opacity: 0;
-                transform: scale(0.9) translateY(30px);
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
-        }
-        
-        /* Section Titles */
-        .section-title {
-            font-size: 2.5rem;
-            color: var(--primary-blue);
-            margin-bottom: 2rem;
-            text-align: center;
-            letter-spacing: 0.05em;
-            font-weight: 500;
-        }
-        
-        /* Glass Cards */
-        .glass-card {
-            background: rgba(255, 252, 249, 0.6);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(35, 87, 137, 0.15);
-            border-radius: 20px;
             padding: 1.5rem;
             box-shadow: 0 8px 32px rgba(8, 7, 5, 0.08);
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            margin-bottom: 1rem;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: cardFadeIn 0.6s ease-out backwards;
         }
         
-        .glass-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 40px rgba(8, 7, 5, 0.12);
+        @keyframes cardFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .feed-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 48px rgba(8, 7, 5, 0.12);
             border-color: rgba(35, 87, 137, 0.25);
         }
         
-        /* Pill Inputs */
+        /* Card Header */
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(35, 87, 137, 0.1);
+        }
+        
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(35, 87, 137, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-blue);
+            font-size: 1.2rem;
+        }
+        
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary-blue);
+            flex: 1;
+        }
+        
+        .card-badge {
+            background: rgba(35, 87, 137, 0.1);
+            color: var(--primary-blue);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        /* Card Content Variations */
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(35, 87, 137, 0.06);
+        }
+        
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+        
+        .stat-label {
+            color: var(--primary-dark);
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+        
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+        
+        .stat-value.positive {
+            color: #10B981;
+        }
+        
+        .stat-value.negative {
+            color: #EF4444;
+        }
+        
+        /* Big Number Display */
+        .big-stat {
+            text-align: center;
+            padding: 2rem 1rem;
+        }
+        
+        .big-stat-value {
+            font-size: 3rem;
+            font-weight: 600;
+            color: var(--primary-blue);
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+        
+        .big-stat-label {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--primary-dark);
+            opacity: 0.6;
+        }
+        
+        /* Chart Card */
+        .chart-card {
+            min-height: 300px;
+        }
+        
+        /* Floating Action Toolbar */
+        .floating-toolbar {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--glass-bg);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+            padding: 12px;
+            box-shadow: 0 16px 48px rgba(8, 7, 5, 0.25);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .floating-toolbar.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .toolbar-input {
+            background: rgba(255, 252, 249, 0.8);
+            border: 1px solid rgba(35, 87, 137, 0.15);
+            border-radius: 50px;
+            padding: 12px 24px;
+            font-size: 15px;
+            color: var(--primary-dark);
+            outline: none;
+            transition: all 0.3s ease;
+            width: 300px;
+        }
+        
+        .toolbar-input:focus {
+            background: rgba(255, 252, 249, 1);
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(35, 87, 137, 0.1);
+        }
+        
+        .toolbar-input::placeholder {
+            color: var(--primary-dark);
+            opacity: 0.5;
+        }
+        
+        .toolbar-btn {
+            width: 48px;
+            height: 48px;
+            background: rgba(35, 87, 137, 0.15);
+            border: 1px solid rgba(35, 87, 137, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-blue);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .toolbar-btn:hover {
+            background: rgba(35, 87, 137, 0.25);
+            transform: scale(1.1);
+            box-shadow: 0 4px 16px rgba(35, 87, 137, 0.2);
+        }
+        
+        .toolbar-btn:active {
+            transform: scale(0.95);
+        }
+        
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(8, 7, 5, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+        
+        .modal-content {
+            background: var(--glass-bg);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 24px 64px rgba(8, 7, 5, 0.3);
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(35, 87, 137, 0.1);
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-blue);
+        }
+        
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            background: rgba(35, 87, 137, 0.1);
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-blue);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-close:hover {
+            background: rgba(35, 87, 137, 0.2);
+            transform: rotate(90deg);
+        }
+        
+        /* Form Elements in Modal */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--primary-blue);
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .form-input {
+            width: 100%;
+            background: rgba(255, 252, 249, 0.8);
+            border: 1px solid rgba(35, 87, 137, 0.2);
+            border-radius: 50px;
+            padding: 12px 20px;
+            font-size: 15px;
+            color: var(--primary-dark);
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus {
+            background: rgba(255, 252, 249, 1);
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(35, 87, 137, 0.1);
+        }
+        
+        .form-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+        }
+        
+        .form-checkbox input {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        /* Streamlit Element Overrides */
         .stTextInput input, .stNumberInput input {
             background: rgba(255, 252, 249, 0.8) !important;
             backdrop-filter: blur(10px) !important;
             border: 1px solid rgba(35, 87, 137, 0.2) !important;
             border-radius: 50px !important;
-            padding: 14px 24px !important;
-            font-size: 16px !important;
+            padding: 12px 20px !important;
+            font-size: 15px !important;
             color: var(--primary-dark) !important;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-            box-shadow: 0 4px 16px rgba(35, 87, 137, 0.05) !important;
+            transition: all 0.3s ease !important;
         }
         
         .stTextInput input:focus, .stNumberInput input:focus {
-            background: rgba(255, 252, 249, 0.95) !important;
+            background: rgba(255, 252, 249, 1) !important;
             border-color: var(--primary-blue) !important;
-            box-shadow: 0 8px 24px rgba(35, 87, 137, 0.15) !important;
-            outline: none !important;
+            box-shadow: 0 0 0 3px rgba(35, 87, 137, 0.1) !important;
         }
         
-        /* Pill Buttons */
         .stButton button {
             background: rgba(35, 87, 137, 0.15) !important;
             backdrop-filter: blur(25px) !important;
             border: 1px solid rgba(35, 87, 137, 0.2) !important;
             color: var(--primary-blue) !important;
             border-radius: 50px !important;
-            padding: 14px 32px !important;
-            font-size: 16px !important;
+            padding: 12px 28px !important;
+            font-size: 15px !important;
             font-weight: 500 !important;
             transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-            box-shadow: 0 4px 16px rgba(35, 87, 137, 0.1) !important;
-            letter-spacing: 0.02em !important;
         }
         
         .stButton button:hover {
             background: rgba(35, 87, 137, 0.25) !important;
             transform: translateY(-2px) !important;
-            box-shadow: 0 8px 24px rgba(35, 87, 137, 0.2) !important;
         }
         
-        .stButton button:active {
-            transform: translateY(0) !important;
-        }
-        
-        /* Floating Toolbar - Glassmorphic */
-        .floating-toolbar {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(255, 252, 249, 0.4);
-            backdrop-filter: blur(40px);
-            -webkit-backdrop-filter: blur(40px);
-            border: 1px solid var(--glass-border);
-            border-radius: 50px;
-            padding: 12px 24px;
-            box-shadow: 0 16px 40px rgba(8, 7, 5, 0.2);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            z-index: 1000;
-            animation: slideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translate(-50%, 20px);
-            }
-            to {
-                opacity: 1;
-                transform: translate(-50%, 0);
-            }
-        }
-        
-        /* Metric Cards - Glassmorphic */
-        .metric-card {
-            background: rgba(255, 252, 249, 0.5);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(35, 87, 137, 0.12);
-            border-radius: 20px;
-            padding: 1.5rem;
-            box-shadow: 0 8px 32px rgba(8, 7, 5, 0.08);
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            margin-bottom: 1rem;
-        }
-        
-        .metric-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 40px rgba(8, 7, 5, 0.12);
-            border-color: rgba(35, 87, 137, 0.2);
-        }
-        
-        .metric-label {
-            color: var(--primary-blue);
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-bottom: 0.5rem;
-            opacity: 0.9;
-        }
-        
-        .metric-value {
-            color: var(--primary-dark);
-            font-size: 2rem;
-            font-weight: 500;
-        }
-        
-        /* Stock Analysis Page Header */
-        .analysis-header {
-            background: rgba(35, 87, 137, 0.15);
-            backdrop-filter: blur(40px);
-            -webkit-backdrop-filter: blur(40px);
-            border: 1px solid rgba(35, 87, 137, 0.2);
-            color: var(--primary-blue);
-            padding: 3rem 2rem;
-            border-radius: 25px;
-            margin-bottom: 2rem;
-            box-shadow: 0 16px 48px rgba(35, 87, 137, 0.15);
-        }
-        
-        .stock-name {
-            font-size: 3rem;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-        }
-        
-        .company-name {
-            font-size: 1.5rem;
-            opacity: 0.8;
-        }
-        
-        /* Recommendation Badge - Glassmorphic */
-        .recommendation-badge {
-            display: inline-block;
-            padding: 1rem 2.5rem;
-            border-radius: 50px;
-            font-size: 1.5rem;
-            font-weight: 500;
-            letter-spacing: 0.05em;
-            margin: 1rem 0;
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            box-shadow: 0 8px 32px rgba(8, 7, 5, 0.15);
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        
-        .recommendation-badge:hover {
-            transform: scale(1.05);
-        }
-        
-        .rec-buy {
-            background: rgba(16, 185, 129, 0.2);
-            border: 2px solid rgba(16, 185, 129, 0.4);
-            color: #059669;
-        }
-        
-        .rec-sell {
-            background: rgba(239, 68, 68, 0.2);
-            border: 2px solid rgba(239, 68, 68, 0.4);
-            color: #DC2626;
-        }
-        
-        .rec-hold {
-            background: rgba(251, 191, 36, 0.2);
-            border: 2px solid rgba(251, 191, 36, 0.4);
-            color: #D97706;
-        }
-        
-        /* Chart Containers - Glassmorphic */
-        .chart-container {
-            background: rgba(255, 252, 249, 0.6);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(35, 87, 137, 0.12);
-            border-radius: 20px;
-            padding: 1.5rem;
-            box-shadow: 0 8px 32px rgba(8, 7, 5, 0.08);
-            margin-bottom: 1.5rem;
-            transition: all 0.3s ease;
-        }
-        
-        .chart-container:hover {
-            border-color: rgba(35, 87, 137, 0.2);
-            box-shadow: 0 12px 40px rgba(8, 7, 5, 0.12);
-        }
-        
-        .chart-title {
-            color: var(--primary-blue);
-            font-size: 1.2rem;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-weight: 500;
-        }
-        
-        /* Alert Boxes - Glassmorphic */
-        .alert-box {
-            background: rgba(255, 252, 249, 0.5);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 15px;
-            padding: 1rem 1.5rem;
-            margin: 1rem 0;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            transition: all 0.3s ease;
-        }
-        
-        .alert-box:hover {
-            transform: translateX(5px);
-        }
-        
-        .alert-warning {
-            border-left: 4px solid #FBBF24;
-            background: rgba(251, 191, 36, 0.1);
-            color: #92400E;
-        }
-        
-        .alert-info {
-            border-left: 4px solid var(--primary-blue);
-            background: rgba(35, 87, 137, 0.1);
-            color: var(--primary-blue);
-        }
-        
-        .alert-success {
-            border-left: 4px solid #10B981;
-            background: rgba(16, 185, 129, 0.1);
-            color: #065F46;
-        }
-        
-        /* Progress Indicators */
-        .progress-bar {
-            height: 8px;
-            background: rgba(35, 87, 137, 0.15);
-            border-radius: 10px;
-            overflow: hidden;
-            margin: 1rem 0;
-            backdrop-filter: blur(10px);
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary-blue) 0%, #1a4368 100%);
-            border-radius: 10px;
-            transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        
-        /* Stat Grid */
-        .stat-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin: 2rem 0;
-        }
-        
-        /* Expandable Section */
-        .expandable-section {
-            margin-top: 2rem;
-            text-align: center;
+        /* Hide Streamlit default spacing */
+        .element-container {
+            margin: 0 !important;
         }
         
         /* Smooth Scrolling */
@@ -457,150 +539,126 @@ def load_custom_css():
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
-            height: 8px;
         }
         
         ::-webkit-scrollbar-track {
             background: rgba(35, 87, 137, 0.05);
-            border-radius: 10px;
         }
         
         ::-webkit-scrollbar-thumb {
             background: rgba(35, 87, 137, 0.3);
             border-radius: 10px;
-            transition: all 0.3s ease;
         }
         
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(35, 87, 137, 0.5);
         }
         
-        /* Spinner Override */
-        .stSpinner > div {
-            border-top-color: var(--primary-blue) !important;
-        }
-        
-        /* Tab Styling - Glassmorphic */
-        .stTabs [data-baseweb="tab-list"] {
-            gap: 8px;
-            background: rgba(255, 252, 249, 0.3);
-            backdrop-filter: blur(20px);
-            padding: 8px;
+        /* Recommendation Badge */
+        .rec-badge {
+            display: inline-block;
+            padding: 0.75rem 2rem;
             border-radius: 50px;
-            border: 1px solid rgba(35, 87, 137, 0.1);
-        }
-        
-        .stTabs [data-baseweb="tab"] {
-            border-radius: 50px !important;
-            padding: 12px 24px !important;
-            background: transparent !important;
-            border: none !important;
-            color: var(--primary-dark) !important;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-            font-weight: 500 !important;
-        }
-        
-        .stTabs [aria-selected="true"] {
-            background: rgba(35, 87, 137, 0.15) !important;
-            color: var(--primary-blue) !important;
-            box-shadow: 0 4px 12px rgba(35, 87, 137, 0.15) !important;
-        }
-        
-        .stTabs [data-baseweb="tab"]:hover {
-            background: rgba(35, 87, 137, 0.08) !important;
-        }
-        
-        /* Selectbox Styling */
-        .stSelectbox select {
-            background: rgba(255, 252, 249, 0.8) !important;
-            backdrop-filter: blur(10px) !important;
-            border: 1px solid rgba(35, 87, 137, 0.2) !important;
-            border-radius: 50px !important;
-            padding: 14px 24px !important;
-            color: var(--primary-dark) !important;
-            transition: all 0.3s ease !important;
-        }
-        
-        .stSelectbox select:focus {
-            border-color: var(--primary-blue) !important;
-            box-shadow: 0 8px 24px rgba(35, 87, 137, 0.15) !important;
-        }
-        
-        /* Checkbox Styling */
-        .stCheckbox {
-            color: var(--primary-dark) !important;
-        }
-        
-        .stCheckbox label {
-            font-size: 16px !important;
-        }
-        
-        /* Expander Styling */
-        .streamlit-expanderHeader {
-            background: rgba(255, 252, 249, 0.5) !important;
-            backdrop-filter: blur(20px) !important;
-            border: 1px solid rgba(35, 87, 137, 0.12) !important;
-            border-radius: 15px !important;
-            font-weight: 500 !important;
-            color: var(--primary-blue) !important;
-            transition: all 0.3s ease !important;
-        }
-        
-        .streamlit-expanderHeader:hover {
-            border-color: rgba(35, 87, 137, 0.25) !important;
-            background: rgba(255, 252, 249, 0.7) !important;
-        }
-        
-        /* Success/Error/Warning Messages */
-        .stSuccess, .stError, .stWarning, .stInfo {
-            background: rgba(255, 252, 249, 0.6) !important;
-            backdrop-filter: blur(20px) !important;
-            border-radius: 15px !important;
-            border: none !important;
-            box-shadow: 0 8px 24px rgba(8, 7, 5, 0.08) !important;
-        }
-        
-        /* Loading Animation */
-        @keyframes pulse {
-            0%, 100% {
-                opacity: 0.6;
-            }
-            50% {
-                opacity: 1;
-            }
-        }
-        
-        .loading-pulse {
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        
-        /* Fade In Animation for Cards */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .fade-in-up {
-            animation: fadeInUp 0.6s ease-out;
-        }
-        
-        /* Hover Glow Effect */
-        .glow-on-hover {
+            font-size: 1.2rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            backdrop-filter: blur(25px);
             transition: all 0.3s ease;
         }
         
-        .glow-on-hover:hover {
-            box-shadow: 0 0 20px rgba(35, 87, 137, 0.3), 
-                        0 0 40px rgba(35, 87, 137, 0.2);
+        .rec-badge.buy {
+            background: rgba(16, 185, 129, 0.15);
+            border: 2px solid rgba(16, 185, 129, 0.4);
+            color: #059669;
+        }
+        
+        .rec-badge.sell {
+            background: rgba(239, 68, 68, 0.15);
+            border: 2px solid rgba(239, 68, 68, 0.4);
+            color: #DC2626;
+        }
+        
+        .rec-badge.hold {
+            background: rgba(251, 191, 36, 0.15);
+            border: 2px solid rgba(251, 191, 36, 0.4);
+            color: #D97706;
+        }
+        
+        /* Alert/Info Cards */
+        .info-card {
+            background: rgba(35, 87, 137, 0.08);
+            border-left: 4px solid var(--primary-blue);
+            border-radius: 12px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .warning-card {
+            background: rgba(251, 191, 36, 0.08);
+            border-left: 4px solid #FBBF24;
+            border-radius: 12px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .success-card {
+            background: rgba(16, 185, 129, 0.08);
+            border-left: 4px solid #10B981;
+            border-radius: 12px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        /* Section Divider */
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(35, 87, 137, 0.2), transparent);
+            margin: 3rem 0;
+        }
+        
+        /* Back Button */
+        .back-btn {
+            position: fixed;
+            top: 24px;
+            left: 24px;
+            width: 48px;
+            height: 48px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(40px);
+            border: 1px solid var(--glass-border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-blue);
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 999;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 8px 24px rgba(8, 7, 5, 0.1);
+        }
+        
+        .back-btn:hover {
+            transform: scale(1.1) translateX(-4px);
+            box-shadow: 0 12px 32px rgba(8, 7, 5, 0.15);
         }
     </style>
+    
+    <script>
+        // Show floating toolbar on scroll
+        window.addEventListener('scroll', function() {
+            const toolbar = document.querySelector('.floating-toolbar');
+            if (toolbar) {
+                if (window.scrollY > 400) {
+                    toolbar.classList.add('visible');
+                } else {
+                    toolbar.classList.remove('visible');
+                }
+            }
+        });
+    </script>
     """, unsafe_allow_html=True)
+
 
 # ---------------- HELPER FUNCTIONS ----------------
 
@@ -937,478 +995,548 @@ def main():
     if 'user_settings' not in st.session_state:
         st.session_state.user_settings = {
             "owns_stock": False,
-            "purchase_price": 0,
+            "purchase_price": 0.0,
             "quantity": 0
         }
+    if 'show_settings_modal' not in st.session_state:
+        st.session_state.show_settings_modal = False
     
-    # Hero Banner
+    # Hero Section (Always visible, scrolls behind content)
     st.markdown("""
-        <div class="welcome-screen">
+        <div class="hero-section">
             <h1 class="hero-title">STOCKIFY</h1>
             <p class="hero-subtitle">Australian Stock Market Intelligence</p>
         </div>
     """, unsafe_allow_html=True)
     
-    # Dashboard Section
+    # Main Content Feed
     if not st.session_state.show_analysis:
-        st.markdown('<div class="app-container">', unsafe_allow_html=True)
-        
-        st.markdown('<h2 class="section-title">Market Overview</h2>', unsafe_allow_html=True)
-        
-        # Load market data
-        with st.spinner("Loading market data..."):
-            stock_data = load_market_overview()
-            gainers, losers = get_top_movers(stock_data)
-        
-        # Top Gainers and Losers
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-            st.markdown('<div class="chart-title"><i class="bi bi-arrow-up-circle-fill" style="color: #10B981;"></i> Top Gainers</div>', unsafe_allow_html=True)
-            for g in gainers:
-                st.markdown(f"""
-                    <div class="metric-card">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 1.2rem; color: var(--primary-dark); font-weight: 500;">{g['ticker']}</span>
-                            <span style="font-size: 1.5rem; color: #10B981; font-weight: 500;">+{g['change']}%</span>
-                        </div>
-                        <div style="color: var(--primary-blue); margin-top: 0.5rem; opacity: 0.8;">${g['price']}</div>
-                    </div>
-                """, unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
-        
-        with col2:
-            st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-            st.markdown('<div class="chart-title"><i class="bi bi-arrow-down-circle-fill" style="color: #EF4444;"></i> Top Losers</div>', unsafe_allow_html=True)
-            for l in losers:
-                st.markdown(f"""
-                    <div class="metric-card">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 1.2rem; color: var(--primary-dark); font-weight: 500;">{l['ticker']}</span>
-                            <span style="font-size: 1.5rem; color: #EF4444; font-weight: 500;">{l['change']}%</span>
-                        </div>
-                        <div style="color: var(--primary-blue); margin-top: 0.5rem; opacity: 0.8;">${l['price']}</div>
-                    </div>
-                """, unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
-        
-        # Market Charts
-        st.markdown('<h2 class="section-title" style="margin-top: 3rem;">Market Performance</h2>', unsafe_allow_html=True)
-        
-        tab1, tab2, tab3 = st.tabs(["Price Trends", "Trading Volume", "Comparative Analysis"])
-        
-        with tab1:
-            st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-            st.markdown('<div class="chart-title"><i class="bi bi-graph-up"></i> 6-Month Price Trends</div>', unsafe_allow_html=True)
-            price_data = {k: v["history"]["Close"] for k, v in stock_data.items()}
-            st.line_chart(price_data, height=400)
-            st.markdown('</div>', unsafe_allow_html=True)
-        
-        with tab2:
-            st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-            st.markdown('<div class="chart-title"><i class="bi bi-bar-chart-fill"></i> Trading Volume</div>', unsafe_allow_html=True)
-            volume_data = {k: v["history"]["Volume"] for k, v in stock_data.items()}
-            st.area_chart(volume_data, height=400)
-            st.markdown('</div>', unsafe_allow_html=True)
-        
-        with tab3:
-            st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-            st.markdown('<div class="chart-title"><i class="bi bi-columns-gap"></i> Top Stocks Comparison</div>', unsafe_allow_html=True)
-            
-            # Show top 5 stocks
-            top_5 = list(stock_data.keys())[:5]
-            comparison_data = {k: stock_data[k]["history"]["Close"] for k in top_5}
-            st.line_chart(comparison_data, height=400)
-            st.markdown('</div>', unsafe_allow_html=True)
-        
-        st.markdown('</div>', unsafe_allow_html=True)
-        
-        # Floating Toolbar
-        st.markdown('<div style="height: 150px;"></div>', unsafe_allow_html=True)
-        
-        # Create toolbar at bottom
-        toolbar_col1, toolbar_col2, toolbar_col3 = st.columns([3, 1, 1])
-        
-        with toolbar_col1:
-            ticker_input = st.text_input(
-                "Search Stock",
-                placeholder="Enter ticker (e.g., WOW, TLS, BHP)",
-                label_visibility="collapsed",
-                key="ticker_search"
-            )
-        
-        with toolbar_col2:
-            search_button = st.button("🔍 Analyze", use_container_width=True)
-        
-        with toolbar_col3:
-            if st.button("⚙️ Settings", use_container_width=True):
-                st.session_state.show_settings = not st.session_state.get('show_settings', False)
-        
-        # Settings Panel
-        if st.session_state.get('show_settings', False):
-            st.markdown("---")
-            st.markdown("### Settings")
-            
-            col1, col2, col3 = st.columns(3)
-            
-            with col1:
-                owns_stock = st.checkbox(
-                    "I already own this stock",
-                    value=st.session_state.user_settings["owns_stock"]
-                )
-                st.session_state.user_settings["owns_stock"] = owns_stock
-            
-            if owns_stock:
-                with col2:
-                    purchase_price = st.number_input(
-                        "Purchase Price ($)",
-                        min_value=0.0,
-                        value=st.session_state.user_settings["purchase_price"],
-                        step=0.01
-                    )
-                    st.session_state.user_settings["purchase_price"] = purchase_price
-                
-                with col3:
-                    quantity = st.number_input(
-                        "Quantity",
-                        min_value=0,
-                        value=st.session_state.user_settings["quantity"],
-                        step=1
-                    )
-                    st.session_state.user_settings["quantity"] = quantity
-        
-        # Handle search
-        if search_button and ticker_input:
-            st.session_state.selected_ticker = format_ticker_for_australia(ticker_input)
-            st.session_state.show_analysis = True
-            st.rerun()
-    
-    # Analysis Page
+        render_dashboard_feed()
     else:
-        ticker = st.session_state.selected_ticker
-        
-        # Back button
-        if st.button("← Back to Dashboard"):
-            st.session_state.show_analysis = False
-            st.session_state.selected_ticker = None
-            st.rerun()
-        
-        # Get stock info
-        with st.spinner("Fetching stock data..."):
-            stock_info = get_stock_info(ticker)
-        
-        if not stock_info:
-            st.error("Could not fetch stock data. Please check the ticker symbol.")
-            if st.button("Try Another Stock"):
-                st.session_state.show_analysis = False
-                st.rerun()
-            st.stop()
-        
-        # Analysis Header
-        st.markdown(f"""
-            <div class="analysis-header">
-                <div class="stock-name">{stock_info['ticker'].replace('.AX', '')}</div>
-                <div class="company-name">{stock_info['company_name']}</div>
+        render_analysis_page()
+    
+    # Floating Toolbar (shown after scrolling)
+    render_floating_toolbar()
+    
+    # Settings Modal
+    if st.session_state.show_settings_modal:
+        render_settings_modal()
+
+
+def render_dashboard_feed():
+    """Render the main dashboard as a card-based news feed"""
+    
+    st.markdown('<div class="content-feed">', unsafe_allow_html=True)
+    
+    # Load market data
+    with st.spinner("Loading market data..."):
+        stock_data = load_market_overview()
+        gainers, losers = get_top_movers(stock_data)
+    
+    # Create masonry grid layout
+    st.markdown('<div class="card-grid">', unsafe_allow_html=True)
+    
+    # Card 1: Top Gainers (Medium)
+    st.markdown('''
+        <div class="feed-card card-medium">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="bi bi-arrow-up-circle-fill"></i>
+                </div>
+                <div class="card-title">Top Gainers</div>
+                <div class="card-badge">Today</div>
             </div>
-        """, unsafe_allow_html=True)
-        
-        # Key Stats Grid
-        col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
-            st.markdown(f"""
-                <div class="metric-card">
-                    <div class="metric-label"><i class="bi bi-cash-coin"></i> Current Price</div>
-                    <div class="metric-value">${stock_info['current_price']}</div>
+    ''', unsafe_allow_html=True)
+    
+    for g in gainers:
+        st.markdown(f'''
+            <div class="stat-row">
+                <span class="stat-label">{g['ticker']}</span>
+                <span class="stat-value positive">+{g['change']}%</span>
+            </div>
+        ''', unsafe_allow_html=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Card 2: Top Losers (Medium)
+    st.markdown('''
+        <div class="feed-card card-medium">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="bi bi-arrow-down-circle-fill"></i>
                 </div>
-            """, unsafe_allow_html=True)
-        
-        with col2:
-            st.markdown(f"""
-                <div class="metric-card">
-                    <div class="metric-label"><i class="bi bi-building"></i> Sector</div>
-                    <div class="metric-value" style="font-size: 1.2rem;">{stock_info['sector']}</div>
+                <div class="card-title">Top Losers</div>
+                <div class="card-badge">Today</div>
+            </div>
+    ''', unsafe_allow_html=True)
+    
+    for l in losers:
+        st.markdown(f'''
+            <div class="stat-row">
+                <span class="stat-label">{l['ticker']}</span>
+                <span class="stat-value negative">{l['change']}%</span>
+            </div>
+        ''', unsafe_allow_html=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Card 3: Market Summary Big Stat (Small)
+    avg_change = sum([g['change'] for g in gainers[:3]]) / 3
+    st.markdown(f'''
+        <div class="feed-card card-small">
+            <div class="big-stat">
+                <div class="big-stat-value {'positive' if avg_change > 0 else 'negative'}">{avg_change:+.2f}%</div>
+                <div class="big-stat-label">Market Average</div>
+            </div>
+        </div>
+    ''', unsafe_allow_html=True)
+    
+    # Card 4: Active Stocks Count (Small)
+    st.markdown(f'''
+        <div class="feed-card card-small">
+            <div class="big-stat">
+                <div class="big-stat-value">{len(stock_data)}</div>
+                <div class="big-stat-label">Tracked Stocks</div>
+            </div>
+        </div>
+    ''', unsafe_allow_html=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)  # Close first row
+    
+    # Full-width chart cards
+    st.markdown('<div class="card-grid">', unsafe_allow_html=True)
+    
+    # Card 5: Price Trends Chart (Full Width)
+    st.markdown('''
+        <div class="feed-card card-full chart-card">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="bi bi-graph-up"></i>
                 </div>
-            """, unsafe_allow_html=True)
-        
-        with col3:
-            pe_ratio = stock_info['pe_ratio']
-            pe_display = f"{pe_ratio:.2f}" if isinstance(pe_ratio, (int, float)) else "N/A"
-            st.markdown(f"""
-                <div class="metric-card">
-                    <div class="metric-label"><i class="bi bi-graph-up-arrow"></i> P/E Ratio</div>
-                    <div class="metric-value">{pe_display}</div>
+                <div class="card-title">6-Month Price Trends</div>
+                <div class="card-badge">Historical</div>
+            </div>
+        </div>
+    ''', unsafe_allow_html=True)
+    
+    price_data = {k: v["history"]["Close"] for k, v in stock_data.items()}
+    st.line_chart(price_data, height=350)
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Card 6: Volume Chart (Full Width)
+    st.markdown('''
+        <div class="feed-card card-full chart-card">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="bi bi-bar-chart-fill"></i>
                 </div>
-            """, unsafe_allow_html=True)
+                <div class="card-title">Trading Volume</div>
+                <div class="card-badge">6 Months</div>
+            </div>
+        </div>
+    ''', unsafe_allow_html=True)
+    
+    volume_data = {k: v["history"]["Volume"] for k, v in stock_data.items()}
+    st.area_chart(volume_data, height=300)
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Individual stock performance cards
+    st.markdown('<div class="card-grid">', unsafe_allow_html=True)
+    
+    top_stocks = list(stock_data.keys())[:6]
+    for ticker in top_stocks:
+        data = stock_data[ticker]
+        hist = data["history"]
+        current_price = hist["Close"].iloc[-1]
+        change_30d = calculate_trend(hist, 30)
         
-        with col4:
-            market_cap_b = stock_info['market_cap'] / 1e9 if stock_info['market_cap'] else 0
-            st.markdown(f"""
-                <div class="metric-card">
-                    <div class="metric-label"><i class="bi bi-pie-chart-fill"></i> Market Cap</div>
-                    <div class="metric-value">${market_cap_b:.2f}B</div>
-                </div>
-            """, unsafe_allow_html=True)
-        
-        # Additional Stats
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-            st.markdown('<div class="chart-title"><i class="bi bi-graph-up"></i> Price Performance</div>', unsafe_allow_html=True)
-            
-            change_7d = calculate_trend(stock_info['history'], 7)
-            change_30d = calculate_trend(stock_info['history'], 30)
-            
-            st.markdown(f"""
-                <div style="padding: 1rem 0;">
-                    <div style="margin-bottom: 1rem;">
-                        <span style="color: var(--primary-blue);">7-Day Change:</span>
-                        <span style="color: {'#00C851' if change_7d > 0 else '#ff4444'}; font-size: 1.3rem; font-weight: 500; margin-left: 1rem;">
-                            {change_7d:+.2f}%
-                        </span>
+        st.markdown(f'''
+            <div class="feed-card card-small">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="bi bi-graph-up-arrow"></i>
                     </div>
-                    <div>
-                        <span style="color: var(--primary-blue);">30-Day Change:</span>
-                        <span style="color: {'#00C851' if change_30d > 0 else '#ff4444'}; font-size: 1.3rem; font-weight: 500; margin-left: 1rem;">
-                            {change_30d:+.2f}%
-                        </span>
-                    </div>
+                    <div class="card-title">{ticker}</div>
                 </div>
-            """, unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
-        
-        with col2:
-            st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-            st.markdown('<div class="chart-title"><i class="bi bi-speedometer2"></i> Volatility</div>', unsafe_allow_html=True)
-            
-            volatility = calculate_volatility(stock_info['history'])
-            
-            st.markdown(f"""
-                <div style="padding: 1rem 0;">
-                    <div style="font-size: 2rem; color: var(--primary-dark); font-weight: 500;">
-                        {volatility}%
-                    </div>
-                    <div style="color: var(--primary-blue); margin-top: 0.5rem;">
-                        Annualized Volatility
-                    </div>
+                <div class="big-stat">
+                    <div class="big-stat-value">${current_price:.2f}</div>
+                    <div class="big-stat-label {'positive' if change_30d > 0 else 'negative'}">{change_30d:+.1f}% (30d)</div>
                 </div>
-            """, unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
-        
-        with col3:
-            st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-            st.markdown('<div class="chart-title"><i class="bi bi-arrow-down-up"></i> 52-Week Range</div>', unsafe_allow_html=True)
-            
-            st.markdown(f"""
-                <div style="padding: 1rem 0;">
-                    <div style="margin-bottom: 0.5rem;">
-                        <span style="color: var(--primary-blue);">High:</span>
-                        <span style="font-size: 1.3rem; margin-left: 1rem;">${stock_info['52w_high']:.2f}</span>
-                    </div>
-                    <div>
-                        <span style="color: var(--primary-blue);">Low:</span>
-                        <span style="font-size: 1.3rem; margin-left: 1rem;">${stock_info['52w_low']:.2f}</span>
-                    </div>
+            </div>
+        ''', unsafe_allow_html=True)
+    
+    st.markdown('</div></div>', unsafe_allow_html=True)  # Close grid and content-feed
+
+
+def render_analysis_page():
+    """Render detailed stock analysis page"""
+    
+    ticker = st.session_state.selected_ticker
+    
+    # Back button
+    st.markdown('''
+        <div class="back-btn" onclick="window.location.reload()">
+            <i class="bi bi-arrow-left"></i>
+        </div>
+    ''', unsafe_allow_html=True)
+    
+    if st.button("← Back", key="back_btn_streamlit"):
+        st.session_state.show_analysis = False
+        st.session_state.selected_ticker = None
+        st.rerun()
+    
+    st.markdown('<div class="content-feed">', unsafe_allow_html=True)
+    
+    # Get stock info
+    with st.spinner("Fetching stock data..."):
+        stock_info = get_stock_info(ticker)
+    
+    if not stock_info:
+        st.error("Could not fetch stock data. Please check the ticker symbol.")
+        st.stop()
+    
+    # Stock Header Card (Full Width)
+    st.markdown(f'''
+        <div class="feed-card card-full">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="bi bi-building"></i>
                 </div>
-            """, unsafe_allow_html=True)
-            st.markdown('</div>', unsafe_allow_html=True)
+                <div>
+                    <div style="font-size: 2rem; font-weight: 600; color: var(--primary-blue);">{stock_info['ticker'].replace('.AX', '')}</div>
+                    <div style="font-size: 1.2rem; opacity: 0.7;">{stock_info['company_name']}</div>
+                </div>
+            </div>
+        </div>
+    ''', unsafe_allow_html=True)
+    
+    # Key stats in grid
+    st.markdown('<div class="card-grid">', unsafe_allow_html=True)
+    
+    # Price Card
+    st.markdown(f'''
+        <div class="feed-card card-small">
+            <div class="big-stat">
+                <div class="big-stat-value">${stock_info['current_price']}</div>
+                <div class="big-stat-label">Current Price</div>
+            </div>
+        </div>
+    ''', unsafe_allow_html=True)
+    
+    # Sector Card
+    st.markdown(f'''
+        <div class="feed-card card-small">
+            <div class="card-header">
+                <div class="card-icon"><i class="bi bi-tag-fill"></i></div>
+                <div class="card-title">Sector</div>
+            </div>
+            <div style="font-size: 1.1rem; font-weight: 500; text-align: center; padding: 1rem 0;">
+                {stock_info['sector']}
+            </div>
+        </div>
+    ''', unsafe_allow_html=True)
+    
+    # P/E Ratio Card
+    pe_ratio = stock_info['pe_ratio']
+    pe_display = f"{pe_ratio:.2f}" if isinstance(pe_ratio, (int, float)) else "N/A"
+    st.markdown(f'''
+        <div class="feed-card card-small">
+            <div class="big-stat">
+                <div class="big-stat-value">{pe_display}</div>
+                <div class="big-stat-label">P/E Ratio</div>
+            </div>
+        </div>
+    ''', unsafe_allow_html=True)
+    
+    # Market Cap Card
+    market_cap_b = stock_info['market_cap'] / 1e9 if stock_info['market_cap'] else 0
+    st.markdown(f'''
+        <div class="feed-card card-small">
+            <div class="big-stat">
+                <div class="big-stat-value">${market_cap_b:.2f}B</div>
+                <div class="big-stat-label">Market Cap</div>
+            </div>
+        </div>
+    ''', unsafe_allow_html=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)  # Close stats grid
+    
+    # Performance Card
+    change_7d = calculate_trend(stock_info['history'], 7)
+    change_30d = calculate_trend(stock_info['history'], 30)
+    volatility = calculate_volatility(stock_info['history'])
+    
+    st.markdown('<div class="card-grid">', unsafe_allow_html=True)
+    
+    st.markdown(f'''
+        <div class="feed-card card-medium">
+            <div class="card-header">
+                <div class="card-icon"><i class="bi bi-activity"></i></div>
+                <div class="card-title">Performance</div>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">7-Day Change</span>
+                <span class="stat-value {'positive' if change_7d > 0 else 'negative'}">{change_7d:+.2f}%</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">30-Day Change</span>
+                <span class="stat-value {'positive' if change_30d > 0 else 'negative'}">{change_30d:+.2f}%</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Volatility</span>
+                <span class="stat-value">{volatility}%</span>
+            </div>
+        </div>
+    ''', unsafe_allow_html=True)
+    
+    # 52-Week Range Card
+    st.markdown(f'''
+        <div class="feed-card card-medium">
+            <div class="card-header">
+                <div class="card-icon"><i class="bi bi-arrow-down-up"></i></div>
+                <div class="card-title">52-Week Range</div>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">High</span>
+                <span class="stat-value">${stock_info['52w_high']:.2f}</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Low</span>
+                <span class="stat-value">${stock_info['52w_low']:.2f}</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Current Position</span>
+                <span class="stat-value">${stock_info['current_price']}</span>
+            </div>
+        </div>
+    ''', unsafe_allow_html=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Price Chart (Full Width)
+    st.markdown('''
+        <div class="feed-card card-full chart-card">
+            <div class="card-header">
+                <div class="card-icon"><i class="bi bi-graph-up"></i></div>
+                <div class="card-title">Price History (1 Year)</div>
+            </div>
+        </div>
+    ''', unsafe_allow_html=True)
+    
+    st.line_chart(stock_info['history']['Close'], height=350)
+    
+    # Fetch and analyze news
+    st.markdown('''
+        <div class="section-divider"></div>
+        <h2 style="text-align: center; color: var(--primary-blue); font-size: 2rem; margin: 2rem 0;">AI Analysis</h2>
+    ''', unsafe_allow_html=True)
+    
+    with st.spinner("Searching for recent news articles..."):
+        news_links = search_news(ticker.replace(".AX", ""), max_results=50)
+    
+    if news_links:
+        # Crawl articles
+        progress_bar = st.progress(0)
+        status_text = st.empty()
         
-        # Price Chart
-        st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-        st.markdown('<div class="chart-title"><i class="bi bi-graph-up"></i> Price History (1 Year)</div>', unsafe_allow_html=True)
-        st.line_chart(stock_info['history']['Close'], height=300)
-        st.markdown('</div>', unsafe_allow_html=True)
+        successful_articles = []
         
-        # Fetch and analyze news
-        st.markdown("---")
-        st.markdown('<h2 class="section-title">AI-Powered Analysis</h2>', unsafe_allow_html=True)
-        
-        with st.spinner("Searching for recent news articles..."):
-            news_links = search_news(ticker.replace(".AX", ""), max_results=50)
-        
-        if not news_links:
-            st.warning("No recent news found for this stock.")
-        else:
-            # Crawl articles
-            progress_bar = st.progress(0)
-            status_text = st.empty()
+        for idx, link_data in enumerate(news_links):
+            if len(successful_articles) >= 10:
+                break
             
-            successful_articles = []
+            status_text.text(f"Analyzing article {idx + 1}...")
+            progress_bar.progress(min((idx + 1) / 15, 1.0))
             
-            for idx, link_data in enumerate(news_links):
-                if len(successful_articles) >= 10:
-                    break
+            content = crawl_article(link_data["url"])
+            
+            if content:
+                successful_articles.append({
+                    "url": link_data["url"],
+                    "date": link_data.get("date", ""),
+                    "content": content
+                })
+            
+            time.sleep(0.5)
+        
+        progress_bar.empty()
+        status_text.empty()
+        
+        if successful_articles and GROQ_API_KEY:
+            with st.spinner("Generating AI analysis..."):
+                user_position = None
+                if st.session_state.user_settings["owns_stock"]:
+                    user_position = {
+                        "price": st.session_state.user_settings["purchase_price"],
+                        "quantity": st.session_state.user_settings["quantity"]
+                    }
                 
-                status_text.text(f"Analyzing article {idx + 1}...")
-                progress_bar.progress(min((idx + 1) / 15, 1.0))
-                
-                content = crawl_article(link_data["url"])
-                
-                if content:
-                    successful_articles.append({
-                        "url": link_data["url"],
-                        "date": link_data.get("date", ""),
-                        "content": content
-                    })
-                
-                time.sleep(0.5)
+                analysis = analyze_with_groq(successful_articles, stock_info, user_position)
             
-            progress_bar.empty()
-            status_text.empty()
-            
-            if not successful_articles:
-                st.error("Could not extract content from any news source.")
-            else:
-                st.success(f"Successfully analyzed {len(successful_articles)} articles")
+            if not analysis.get("error"):
+                # Recommendation Card
+                rec = analysis.get("recommendation", "HOLD").upper()
+                rec_class = "buy" if "BUY" in rec else ("sell" if "SELL" in rec else "hold")
                 
-                # Analyze with AI
-                if not GROQ_API_KEY:
-                    st.error("GROQ_API_KEY not configured. Please set your API key.")
-                else:
-                    with st.spinner("Generating AI analysis..."):
-                        user_position = None
-                        if st.session_state.user_settings["owns_stock"]:
-                            user_position = {
-                                "price": st.session_state.user_settings["purchase_price"],
-                                "quantity": st.session_state.user_settings["quantity"]
-                            }
-                        
-                        analysis = analyze_with_groq(successful_articles, stock_info, user_position)
-                    
-                    if analysis.get("error"):
-                        st.error(analysis["message"])
-                    else:
-                        # Display Recommendation
-                        rec = analysis.get("recommendation", "HOLD").upper()
-                        rec_class = "rec-buy" if "BUY" in rec else ("rec-sell" if "SELL" in rec else "rec-hold")
-                        
-                        st.markdown(f"""
-                            <div style="text-align: center; margin: 2rem 0;">
-                                <div class="recommendation-badge {rec_class}">
-                                    <i class="bi bi-{'check-circle' if 'BUY' in rec else ('x-circle' if 'SELL' in rec else 'dash-circle')}"></i>
-                                    {rec}
-                                </div>
+                st.markdown(f'''
+                    <div class="feed-card card-full" style="text-align: center;">
+                        <div class="rec-badge {rec_class}">
+                            <i class="bi bi-{'check-circle' if 'BUY' in rec else ('x-circle' if 'SELL' in rec else 'dash-circle')}"></i>
+                            {rec}
+                        </div>
+                    </div>
+                ''', unsafe_allow_html=True)
+                
+                # Analysis Cards
+                st.markdown('<div class="card-grid">', unsafe_allow_html=True)
+                
+                # Sentiment Card
+                sentiment = analysis.get("sentiment", "Neutral")
+                st.markdown(f'''
+                    <div class="feed-card card-small">
+                        <div class="card-header">
+                            <div class="card-icon"><i class="bi bi-emoji-smile"></i></div>
+                            <div class="card-title">Sentiment</div>
+                        </div>
+                        <div class="big-stat">
+                            <div class="big-stat-value" style="font-size: 1.5rem;">{sentiment}</div>
+                        </div>
+                    </div>
+                ''', unsafe_allow_html=True)
+                
+                # Valuation Card
+                st.markdown(f'''
+                    <div class="feed-card card-medium">
+                        <div class="card-header">
+                            <div class="card-icon"><i class="bi bi-scale"></i></div>
+                            <div class="card-title">Valuation</div>
+                        </div>
+                        <p style="line-height: 1.6;">{analysis.get('valuation', 'N/A')}</p>
+                    </div>
+                ''', unsafe_allow_html=True)
+                
+                # Price Justification Card
+                st.markdown(f'''
+                    <div class="feed-card card-medium">
+                        <div class="card-header">
+                            <div class="card-icon"><i class="bi bi-cash-stack"></i></div>
+                            <div class="card-title">Price Justification</div>
+                        </div>
+                        <p style="line-height: 1.6;">{analysis.get('price_justification', 'N/A')}</p>
+                    </div>
+                ''', unsafe_allow_html=True)
+                
+                st.markdown('</div>', unsafe_allow_html=True)
+                
+                # Insights Card (Full Width)
+                if analysis.get("insights"):
+                    st.markdown('''
+                        <div class="feed-card card-full">
+                            <div class="card-header">
+                                <div class="card-icon"><i class="bi bi-lightbulb-fill"></i></div>
+                                <div class="card-title">Actionable Insights</div>
                             </div>
-                        """, unsafe_allow_html=True)
-                        
-                        # Analysis Details
-                        col1, col2 = st.columns(2)
-                        
-                        with col1:
-                            st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-                            st.markdown('<div class="chart-title"><i class="bi bi-emoji-smile"></i> Sentiment Analysis</div>', unsafe_allow_html=True)
-                            sentiment = analysis.get("sentiment", "Neutral")
-                            sentiment_color = "#00C851" if "Positive" in sentiment else ("#ff4444" if "Negative" in sentiment else "#ffbb33")
-                            st.markdown(f"""
-                                <div style="padding: 1rem; text-align: center;">
-                                    <div style="font-size: 2rem; color: {sentiment_color}; font-weight: 500;">
-                                        {sentiment}
-                                    </div>
-                                </div>
-                            """, unsafe_allow_html=True)
-                            st.markdown('</div>', unsafe_allow_html=True)
-                            
-                            # Valuation
-                            st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-                            st.markdown('<div class="chart-title"><i class="bi bi-scale"></i> Valuation</div>', unsafe_allow_html=True)
-                            st.markdown(f"<p style='line-height: 1.6;'>{analysis.get('valuation', 'N/A')}</p>", unsafe_allow_html=True)
-                            st.markdown('</div>', unsafe_allow_html=True)
-                        
-                        with col2:
-                            st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-                            st.markdown('<div class="chart-title"><i class="bi bi-cash-stack"></i> Price Justification</div>', unsafe_allow_html=True)
-                            st.markdown(f"<p style='line-height: 1.6;'>{analysis.get('price_justification', 'N/A')}</p>", unsafe_allow_html=True)
-                            st.markdown('</div>', unsafe_allow_html=True)
-                        
-                        # Advanced Metrics
-                        st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-                        st.markdown('<div class="chart-title"><i class="bi bi-speedometer"></i> Advanced Metrics</div>', unsafe_allow_html=True)
-                        
-                        col1, col2, col3 = st.columns(3)
-                        
-                        with col1:
-                            if analysis.get("volatility"):
-                                st.markdown(f"""
-                                    <div class="alert-box alert-warning">
-                                        <i class="bi bi-exclamation-triangle-fill" style="font-size: 1.5rem;"></i>
-                                        <div>{analysis['volatility']}</div>
-                                    </div>
-                                """, unsafe_allow_html=True)
-                        
-                        with col2:
-                            if analysis.get("market_comparison"):
-                                st.markdown(f"""
-                                    <div class="alert-box alert-info">
-                                        <i class="bi bi-bar-chart-line-fill" style="font-size: 1.5rem;"></i>
-                                        <div>{analysis['market_comparison']}</div>
-                                    </div>
-                                """, unsafe_allow_html=True)
-                        
-                        with col3:
-                            if analysis.get("sentiment_trend"):
-                                st.markdown(f"""
-                                    <div class="alert-box alert-info">
-                                        <i class="bi bi-graph-up-arrow" style="font-size: 1.5rem;"></i>
-                                        <div>{analysis['sentiment_trend']}</div>
-                                    </div>
-                                """, unsafe_allow_html=True)
-                        
-                        st.markdown('</div>', unsafe_allow_html=True)
-                        
-                        # Actionable Insights
-                        st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-                        st.markdown('<div class="chart-title"><i class="bi bi-lightbulb-fill"></i> Actionable Insights</div>', unsafe_allow_html=True)
-                        
-                        for insight in analysis.get("insights", []):
-                            st.markdown(f"""
-                                <div style="padding: 0.75rem; margin: 0.5rem 0; background: rgba(12, 98, 145, 0.05); border-left: 3px solid var(--primary-blue); border-radius: 5px;">
-                                    <i class="bi bi-check2-circle" style="color: var(--primary-blue); margin-right: 0.5rem;"></i>
-                                    {insight}
-                                </div>
-                            """, unsafe_allow_html=True)
-                        
-                        st.markdown('</div>', unsafe_allow_html=True)
-                        
-                        # Major Headlines
-                        st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-                        st.markdown('<div class="chart-title"><i class="bi bi-newspaper"></i> Major News Headlines</div>', unsafe_allow_html=True)
-                        
-                        for headline in analysis.get("headlines", []):
-                            st.markdown(f"""
-                                <div style="padding: 0.75rem; margin: 0.5rem 0; border-bottom: 1px solid rgba(12, 98, 145, 0.1);">
-                                    <i class="bi bi-dot" style="color: var(--primary-blue); margin-right: 0.5rem;"></i>
-                                    {headline}
-                                </div>
-                            """, unsafe_allow_html=True)
-                        
-                        st.markdown('</div>', unsafe_allow_html=True)
-                        
-                        # Detailed Justification
-                        st.markdown('<div class="chart-container">', unsafe_allow_html=True)
-                        st.markdown('<div class="chart-title"><i class="bi bi-file-text-fill"></i> Detailed Analysis</div>', unsafe_allow_html=True)
-                        st.markdown(f"<p style='line-height: 1.8; font-size: 1.05rem;'>{analysis.get('justification', 'N/A')}</p>", unsafe_allow_html=True)
-                        st.markdown('</div>', unsafe_allow_html=True)
-                        
-                        # Show Analysis Button
-                        st.markdown('<div class="expandable-section">', unsafe_allow_html=True)
-                        
-                        if st.button("📊 Show Detailed Article Analysis", use_container_width=False):
-                            st.session_state.show_articles = not st.session_state.get('show_articles', False)
-                        
-                        if st.session_state.get('show_articles', False):
-                            st.markdown("---")
-                            st.markdown('<h3 style="color: var(--primary-blue); margin: 2rem 0;">Articles Analyzed</h3>', unsafe_allow_html=True)
-                            
-                            for idx, article in enumerate(successful_articles):
-                                with st.expander(f"Article {idx + 1} - {article.get('date', 'Unknown date')}", expanded=False):
-                                    st.markdown(f"**URL:** {article['url']}")
-                                    st.markdown(f"**Date:** {article.get('date', 'N/A')}")
-                                    st.markdown("**Content Preview:**")
-                                    st.text(article['content'][:500] + "...")
-                        
-                        st.markdown('</div>', unsafe_allow_html=True)
+                    ''', unsafe_allow_html=True)
+                    
+                    for insight in analysis.get("insights", []):
+                        st.markdown(f'<div class="info-card">{insight}</div>', unsafe_allow_html=True)
+                    
+                    st.markdown('</div>', unsafe_allow_html=True)
+                
+                # Headlines Card (Full Width)
+                if analysis.get("headlines"):
+                    st.markdown('''
+                        <div class="feed-card card-full">
+                            <div class="card-header">
+                                <div class="card-icon"><i class="bi bi-newspaper"></i></div>
+                                <div class="card-title">Major Headlines</div>
+                            </div>
+                    ''', unsafe_allow_html=True)
+                    
+                    for headline in analysis.get("headlines", []):
+                        st.markdown(f'''
+                            <div class="stat-row">
+                                <span class="stat-label"><i class="bi bi-dot"></i> {headline}</span>
+                            </div>
+                        ''', unsafe_allow_html=True)
+                    
+                    st.markdown('</div>', unsafe_allow_html=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)  # Close content-feed
+
+
+def render_floating_toolbar():
+    """Render the floating toolbar with search and settings"""
+    
+    # Create columns for the toolbar
+    col1, col2, col3 = st.columns([6, 1, 1])
+    
+    with col1:
+        ticker_input = st.text_input(
+            "Search Stock",
+            placeholder="Enter ASX ticker (e.g., WOW, BHP)",
+            label_visibility="collapsed",
+            key="ticker_toolbar"
+        )
+    
+    with col2:
+        if st.button("🔍", key="search_btn", help="Analyze Stock"):
+            if ticker_input:
+                st.session_state.selected_ticker = format_ticker_for_australia(ticker_input)
+                st.session_state.show_analysis = True
+                st.rerun()
+    
+    with col3:
+        if st.button("⚙️", key="settings_btn", help="Settings"):
+            st.session_state.show_settings_modal = not st.session_state.show_settings_modal
+            st.rerun()
+
+
+def render_settings_modal():
+    """Render settings modal dialog"""
+    
+    st.markdown('<div class="modal-overlay active" id="settingsModal">', unsafe_allow_html=True)
+    st.markdown('''
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Stock Settings</div>
+            </div>
+    ''', unsafe_allow_html=True)
+    
+    owns_stock = st.checkbox(
+        "I already own this stock",
+        value=st.session_state.user_settings["owns_stock"],
+        key="owns_stock_checkbox"
+    )
+    st.session_state.user_settings["owns_stock"] = owns_stock
+    
+    if owns_stock:
+        purchase_price = st.number_input(
+            "Purchase Price ($)",
+            min_value=0.0,
+            value=st.session_state.user_settings["purchase_price"],
+            step=0.01,
+            key="purchase_price_input"
+        )
+        st.session_state.user_settings["purchase_price"] = purchase_price
+        
+        quantity = st.number_input(
+            "Quantity",
+            min_value=0,
+            value=st.session_state.user_settings["quantity"],
+            step=1,
+            key="quantity_input"
+        )
+        st.session_state.user_settings["quantity"] = quantity
+    
+    if st.button("Close", key="close_modal"):
+        st.session_state.show_settings_modal = False
+        st.rerun()
+    
+    st.markdown('</div></div>', unsafe_allow_html=True)
+
 
 
 if __name__ == "__main__":
