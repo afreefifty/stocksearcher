@@ -84,8 +84,8 @@ def load_custom_css():
         }
         
         .block-container {
-            padding: 0;
-            max-width: 100%;
+            padding: 0 !important;
+            max-width: 100% !important;
         }
         
         /* Welcome Hero - Fixed Position */
@@ -135,29 +135,41 @@ def load_custom_css():
             z-index: 10;
             max-width: 1400px;
             margin: -50vh auto 0;
-            padding: 2rem;
+            padding: 2rem 2rem 8rem 2rem;
             min-height: 100vh;
         }
         
         /* Masonry Grid for Cards */
         .card-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
         
+        @media (max-width: 1200px) {
+            .card-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
         /* Card Sizes */
         .card-small {
-            grid-row: span 1;
+            grid-column: span 1;
         }
         
         .card-medium {
-            grid-row: span 2;
+            grid-column: span 1;
         }
         
         .card-large {
-            grid-row: span 3;
+            grid-column: span 2;
         }
         
         .card-full {
@@ -175,6 +187,8 @@ def load_custom_css():
             box-shadow: 0 8px 32px rgba(8, 7, 5, 0.08);
             transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
             animation: cardFadeIn 0.6s ease-out backwards;
+            display: flex;
+            flex-direction: column;
         }
         
         @keyframes cardFadeIn {
@@ -271,6 +285,10 @@ def load_custom_css():
         .big-stat {
             text-align: center;
             padding: 2rem 1rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
         
         .big-stat-value {
@@ -289,12 +307,14 @@ def load_custom_css():
             opacity: 0.6;
         }
         
-        /* Chart Card */
-        .chart-card {
+        /* Chart Container inside Card */
+        .chart-container {
+            flex: 1;
             min-height: 300px;
+            margin-top: 1rem;
         }
         
-        /* Floating Action Toolbar */
+        /* Floating Action Toolbar - STICKY */
         .floating-toolbar {
             position: fixed;
             bottom: 24px;
@@ -305,190 +325,91 @@ def load_custom_css():
             -webkit-backdrop-filter: blur(40px);
             border: 1px solid var(--glass-border);
             border-radius: 50px;
-            padding: 12px;
+            padding: 12px 16px;
             box-shadow: 0 16px 48px rgba(8, 7, 5, 0.25);
             display: flex;
             align-items: center;
             gap: 12px;
             z-index: 1000;
-            opacity: 0;
-            pointer-events: none;
             transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         
-        .floating-toolbar.visible {
-            opacity: 1;
-            pointer-events: all;
+        .floating-toolbar:hover {
+            box-shadow: 0 20px 56px rgba(8, 7, 5, 0.35);
         }
         
-        .toolbar-input {
-            background: rgba(255, 252, 249, 0.8);
-            border: 1px solid rgba(35, 87, 137, 0.15);
-            border-radius: 50px;
-            padding: 12px 24px;
-            font-size: 15px;
-            color: var(--primary-dark);
-            outline: none;
-            transition: all 0.3s ease;
-            width: 300px;
-        }
-        
-        .toolbar-input:focus {
-            background: rgba(255, 252, 249, 1);
-            border-color: var(--primary-blue);
-            box-shadow: 0 0 0 3px rgba(35, 87, 137, 0.1);
-        }
-        
-        .toolbar-input::placeholder {
-            color: var(--primary-dark);
-            opacity: 0.5;
-        }
-        
-        .toolbar-btn {
-            width: 48px;
-            height: 48px;
-            background: rgba(35, 87, 137, 0.15);
-            border: 1px solid rgba(35, 87, 137, 0.2);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--primary-blue);
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        
-        .toolbar-btn:hover {
-            background: rgba(35, 87, 137, 0.25);
-            transform: scale(1.1);
-            box-shadow: 0 4px 16px rgba(35, 87, 137, 0.2);
-        }
-        
-        .toolbar-btn:active {
-            transform: scale(0.95);
-        }
-        
-        /* Modal Overlay */
-        .modal-overlay {
+        /* Toolbar wrapper to contain Streamlit elements */
+        .toolbar-wrapper {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(8, 7, 5, 0.6);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            z-index: 2000;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .modal-overlay.active {
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
             display: flex;
-            opacity: 1;
-        }
-        
-        .modal-content {
+            align-items: center;
+            gap: 12px;
             background: var(--glass-bg);
             backdrop-filter: blur(40px);
             -webkit-backdrop-filter: blur(40px);
             border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            padding: 2rem;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 24px 64px rgba(8, 7, 5, 0.3);
-            transform: scale(0.9);
-            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        
-        .modal-overlay.active .modal-content {
-            transform: scale(1);
-        }
-        
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid rgba(35, 87, 137, 0.1);
-        }
-        
-        .modal-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--primary-blue);
-        }
-        
-        .modal-close {
-            width: 32px;
-            height: 32px;
-            background: rgba(35, 87, 137, 0.1);
-            border: none;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--primary-blue);
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .modal-close:hover {
-            background: rgba(35, 87, 137, 0.2);
-            transform: rotate(90deg);
-        }
-        
-        /* Form Elements in Modal */
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        
-        .form-label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--primary-blue);
-            font-size: 0.9rem;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        
-        .form-input {
-            width: 100%;
-            background: rgba(255, 252, 249, 0.8);
-            border: 1px solid rgba(35, 87, 137, 0.2);
             border-radius: 50px;
-            padding: 12px 20px;
-            font-size: 15px;
-            color: var(--primary-dark);
-            outline: none;
-            transition: all 0.3s ease;
+            padding: 8px 12px;
+            box-shadow: 0 16px 48px rgba(8, 7, 5, 0.25);
         }
         
-        .form-input:focus {
-            background: rgba(255, 252, 249, 1);
-            border-color: var(--primary-blue);
-            box-shadow: 0 0 0 3px rgba(35, 87, 137, 0.1);
+        .toolbar-wrapper:hover {
+            box-shadow: 0 20px 56px rgba(8, 7, 5, 0.35);
         }
         
-        .form-checkbox {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            cursor: pointer;
+        /* Override Streamlit input styles for toolbar */
+        .toolbar-wrapper .stTextInput > div > div > input {
+            background: rgba(255, 252, 249, 0.8) !important;
+            border: 1px solid rgba(35, 87, 137, 0.15) !important;
+            border-radius: 50px !important;
+            padding: 10px 20px !important;
+            font-size: 15px !important;
+            color: var(--primary-dark) !important;
+            outline: none !important;
+            transition: all 0.3s ease !important;
+            width: 300px !important;
+            height: 44px !important;
         }
         
-        .form-checkbox input {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
+        .toolbar-wrapper .stTextInput > div > div > input:focus {
+            background: rgba(255, 252, 249, 1) !important;
+            border-color: var(--primary-blue) !important;
+            box-shadow: 0 0 0 3px rgba(35, 87, 137, 0.1) !important;
+        }
+        
+        .toolbar-wrapper .stTextInput > label {
+            display: none !important;
+        }
+        
+        .toolbar-wrapper .stButton button {
+            width: 44px !important;
+            height: 44px !important;
+            min-height: 44px !important;
+            background: rgba(35, 87, 137, 0.15) !important;
+            border: 1px solid rgba(35, 87, 137, 0.2) !important;
+            border-radius: 50% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            color: var(--primary-blue) !important;
+            font-size: 1.2rem !important;
+            cursor: pointer !important;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+            padding: 0 !important;
+        }
+        
+        .toolbar-wrapper .stButton button:hover {
+            background: rgba(35, 87, 137, 0.25) !important;
+            transform: scale(1.1) !important;
+            box-shadow: 0 4px 16px rgba(35, 87, 137, 0.2) !important;
+        }
+        
+        .toolbar-wrapper .stButton button:active {
+            transform: scale(0.95) !important;
         }
         
         /* Streamlit Element Overrides */
@@ -590,7 +511,7 @@ def load_custom_css():
             border-left: 4px solid var(--primary-blue);
             border-radius: 12px;
             padding: 1rem;
-            margin: 1rem 0;
+            margin: 0.5rem 0;
         }
         
         .warning-card {
@@ -598,7 +519,7 @@ def load_custom_css():
             border-left: 4px solid #FBBF24;
             border-radius: 12px;
             padding: 1rem;
-            margin: 1rem 0;
+            margin: 0.5rem 0;
         }
         
         .success-card {
@@ -606,7 +527,7 @@ def load_custom_css():
             border-left: 4px solid #10B981;
             border-radius: 12px;
             padding: 1rem;
-            margin: 1rem 0;
+            margin: 0.5rem 0;
         }
         
         /* Section Divider */
@@ -642,21 +563,14 @@ def load_custom_css():
             transform: scale(1.1) translateX(-4px);
             box-shadow: 0 12px 32px rgba(8, 7, 5, 0.15);
         }
+        
+        /* Text content inside cards */
+        .card-text {
+            line-height: 1.6;
+            color: var(--primary-dark);
+            opacity: 0.8;
+        }
     </style>
-    
-    <script>
-        // Show floating toolbar on scroll
-        window.addEventListener('scroll', function() {
-            const toolbar = document.querySelector('.floating-toolbar');
-            if (toolbar) {
-                if (window.scrollY > 400) {
-                    toolbar.classList.add('visible');
-                } else {
-                    toolbar.classList.remove('visible');
-                }
-            }
-        });
-    </script>
     """, unsafe_allow_html=True)
 
 
@@ -998,8 +912,6 @@ def main():
             "purchase_price": 0.0,
             "quantity": 0
         }
-    if 'show_settings_modal' not in st.session_state:
-        st.session_state.show_settings_modal = False
     
     # Hero Section (Always visible, scrolls behind content)
     st.markdown("""
@@ -1015,12 +927,8 @@ def main():
     else:
         render_analysis_page()
     
-    # Floating Toolbar (shown after scrolling)
+    # Floating Toolbar (ALWAYS STICKY)
     render_floating_toolbar()
-    
-    # Settings Modal
-    if st.session_state.show_settings_modal:
-        render_settings_modal()
 
 
 def render_dashboard_feed():
@@ -1033,12 +941,12 @@ def render_dashboard_feed():
         stock_data = load_market_overview()
         gainers, losers = get_top_movers(stock_data)
     
-    # Create masonry grid layout
+    # Create masonry grid layout - 3 cards per row
     st.markdown('<div class="card-grid">', unsafe_allow_html=True)
     
-    # Card 1: Top Gainers (Medium)
+    # Card 1: Top Gainers
     st.markdown('''
-        <div class="feed-card card-medium">
+        <div class="feed-card card-small">
             <div class="card-header">
                 <div class="card-icon">
                     <i class="bi bi-arrow-up-circle-fill"></i>
@@ -1058,9 +966,9 @@ def render_dashboard_feed():
     
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # Card 2: Top Losers (Medium)
+    # Card 2: Top Losers
     st.markdown('''
-        <div class="feed-card card-medium">
+        <div class="feed-card card-small">
             <div class="card-header">
                 <div class="card-icon">
                     <i class="bi bi-arrow-down-circle-fill"></i>
@@ -1080,7 +988,7 @@ def render_dashboard_feed():
     
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # Card 3: Market Summary Big Stat (Small)
+    # Card 3: Market Summary Big Stat
     avg_change = sum([g['change'] for g in gainers[:3]]) / 3
     st.markdown(f'''
         <div class="feed-card card-small">
@@ -1091,7 +999,12 @@ def render_dashboard_feed():
         </div>
     ''', unsafe_allow_html=True)
     
-    # Card 4: Active Stocks Count (Small)
+    st.markdown('</div>', unsafe_allow_html=True)  # Close first row
+    
+    # Second row - 3 cards
+    st.markdown('<div class="card-grid">', unsafe_allow_html=True)
+    
+    # Card 4: Active Stocks Count
     st.markdown(f'''
         <div class="feed-card card-small">
             <div class="big-stat">
@@ -1101,14 +1014,48 @@ def render_dashboard_feed():
         </div>
     ''', unsafe_allow_html=True)
     
-    st.markdown('</div>', unsafe_allow_html=True)  # Close first row
+    # Card 5: Top Gainer Details
+    if gainers:
+        top_gainer = gainers[0]
+        st.markdown(f'''
+            <div class="feed-card card-small">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="bi bi-trophy-fill"></i>
+                    </div>
+                    <div class="card-title">Top Gainer</div>
+                </div>
+                <div class="big-stat">
+                    <div class="big-stat-value positive">{top_gainer['ticker']}</div>
+                    <div class="big-stat-label">+{top_gainer['change']}% • ${top_gainer['price']}</div>
+                </div>
+            </div>
+        ''', unsafe_allow_html=True)
     
-    # Full-width chart cards
+    # Card 6: Top Loser Details
+    if losers:
+        top_loser = losers[-1]
+        st.markdown(f'''
+            <div class="feed-card card-small">
+                <div class="card-header">
+                    <div class="card-icon">
+                        <i class="bi bi-arrow-down"></i>
+                    </div>
+                    <div class="card-title">Top Loser</div>
+                </div>
+                <div class="big-stat">
+                    <div class="big-stat-value negative">{top_loser['ticker']}</div>
+                    <div class="big-stat-label">{top_loser['change']}% • ${top_loser['price']}</div>
+                </div>
+            </div>
+        ''', unsafe_allow_html=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)  # Close second row
+    
+    # Full-width chart card - Price Trends
     st.markdown('<div class="card-grid">', unsafe_allow_html=True)
-    
-    # Card 5: Price Trends Chart (Full Width)
     st.markdown('''
-        <div class="feed-card card-full chart-card">
+        <div class="feed-card card-full">
             <div class="card-header">
                 <div class="card-icon">
                     <i class="bi bi-graph-up"></i>
@@ -1116,17 +1063,19 @@ def render_dashboard_feed():
                 <div class="card-title">6-Month Price Trends</div>
                 <div class="card-badge">Historical</div>
             </div>
-        </div>
+            <div class="chart-container">
     ''', unsafe_allow_html=True)
     
     price_data = {k: v["history"]["Close"] for k, v in stock_data.items()}
     st.line_chart(price_data, height=350)
     
+    st.markdown('</div></div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # Card 6: Volume Chart (Full Width)
+    # Volume Chart - Full width
+    st.markdown('<div class="card-grid">', unsafe_allow_html=True)
     st.markdown('''
-        <div class="feed-card card-full chart-card">
+        <div class="feed-card card-full">
             <div class="card-header">
                 <div class="card-icon">
                     <i class="bi bi-bar-chart-fill"></i>
@@ -1134,18 +1083,19 @@ def render_dashboard_feed():
                 <div class="card-title">Trading Volume</div>
                 <div class="card-badge">6 Months</div>
             </div>
-        </div>
+            <div class="chart-container">
     ''', unsafe_allow_html=True)
     
     volume_data = {k: v["history"]["Volume"] for k, v in stock_data.items()}
     st.area_chart(volume_data, height=300)
     
+    st.markdown('</div></div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # Individual stock performance cards
+    # Individual stock performance cards - 3 per row
     st.markdown('<div class="card-grid">', unsafe_allow_html=True)
     
-    top_stocks = list(stock_data.keys())[:6]
+    top_stocks = list(stock_data.keys())[:9]
     for ticker in top_stocks:
         data = stock_data[ticker]
         hist = data["history"]
@@ -1176,16 +1126,12 @@ def render_analysis_page():
     ticker = st.session_state.selected_ticker
     
     # Back button
-    st.markdown('''
-        <div class="back-btn" onclick="window.location.reload()">
-            <i class="bi bi-arrow-left"></i>
-        </div>
-    ''', unsafe_allow_html=True)
-    
-    if st.button("← Back", key="back_btn_streamlit"):
-        st.session_state.show_analysis = False
-        st.session_state.selected_ticker = None
-        st.rerun()
+    col_back = st.columns([1, 10])[0]
+    with col_back:
+        if st.button("← Back", key="back_btn_streamlit"):
+            st.session_state.show_analysis = False
+            st.session_state.selected_ticker = None
+            st.rerun()
     
     st.markdown('<div class="content-feed">', unsafe_allow_html=True)
     
@@ -1212,7 +1158,7 @@ def render_analysis_page():
         </div>
     ''', unsafe_allow_html=True)
     
-    # Key stats in grid
+    # Key stats in grid - 3 per row
     st.markdown('<div class="card-grid">', unsafe_allow_html=True)
     
     # Price Card
@@ -1250,6 +1196,11 @@ def render_analysis_page():
         </div>
     ''', unsafe_allow_html=True)
     
+    st.markdown('</div>', unsafe_allow_html=True)  # Close first stats row
+    
+    # Second row - 3 cards
+    st.markdown('<div class="card-grid">', unsafe_allow_html=True)
+    
     # Market Cap Card
     market_cap_b = stock_info['market_cap'] / 1e9 if stock_info['market_cap'] else 0
     st.markdown(f'''
@@ -1261,27 +1212,23 @@ def render_analysis_page():
         </div>
     ''', unsafe_allow_html=True)
     
-    st.markdown('</div>', unsafe_allow_html=True)  # Close stats grid
-    
     # Performance Card
     change_7d = calculate_trend(stock_info['history'], 7)
     change_30d = calculate_trend(stock_info['history'], 30)
     volatility = calculate_volatility(stock_info['history'])
     
-    st.markdown('<div class="card-grid">', unsafe_allow_html=True)
-    
     st.markdown(f'''
-        <div class="feed-card card-medium">
+        <div class="feed-card card-small">
             <div class="card-header">
                 <div class="card-icon"><i class="bi bi-activity"></i></div>
                 <div class="card-title">Performance</div>
             </div>
             <div class="stat-row">
-                <span class="stat-label">7-Day Change</span>
+                <span class="stat-label">7-Day</span>
                 <span class="stat-value {'positive' if change_7d > 0 else 'negative'}">{change_7d:+.2f}%</span>
             </div>
             <div class="stat-row">
-                <span class="stat-label">30-Day Change</span>
+                <span class="stat-label">30-Day</span>
                 <span class="stat-value {'positive' if change_30d > 0 else 'negative'}">{change_30d:+.2f}%</span>
             </div>
             <div class="stat-row">
@@ -1293,7 +1240,7 @@ def render_analysis_page():
     
     # 52-Week Range Card
     st.markdown(f'''
-        <div class="feed-card card-medium">
+        <div class="feed-card card-small">
             <div class="card-header">
                 <div class="card-icon"><i class="bi bi-arrow-down-up"></i></div>
                 <div class="card-title">52-Week Range</div>
@@ -1307,25 +1254,29 @@ def render_analysis_page():
                 <span class="stat-value">${stock_info['52w_low']:.2f}</span>
             </div>
             <div class="stat-row">
-                <span class="stat-label">Current Position</span>
+                <span class="stat-label">Current</span>
                 <span class="stat-value">${stock_info['current_price']}</span>
             </div>
         </div>
     ''', unsafe_allow_html=True)
     
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)  # Close second stats row
     
-    # Price Chart (Full Width)
+    # Price Chart (Full Width) - Inside Card
+    st.markdown('<div class="card-grid">', unsafe_allow_html=True)
     st.markdown('''
-        <div class="feed-card card-full chart-card">
+        <div class="feed-card card-full">
             <div class="card-header">
                 <div class="card-icon"><i class="bi bi-graph-up"></i></div>
                 <div class="card-title">Price History (1 Year)</div>
             </div>
-        </div>
+            <div class="chart-container">
     ''', unsafe_allow_html=True)
     
     st.line_chart(stock_info['history']['Close'], height=350)
+    
+    st.markdown('</div></div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
     
     # Fetch and analyze news
     st.markdown('''
@@ -1389,7 +1340,7 @@ def render_analysis_page():
                     </div>
                 ''', unsafe_allow_html=True)
                 
-                # Analysis Cards
+                # Analysis Cards - 3 per row
                 st.markdown('<div class="card-grid">', unsafe_allow_html=True)
                 
                 # Sentiment Card
@@ -1408,23 +1359,23 @@ def render_analysis_page():
                 
                 # Valuation Card
                 st.markdown(f'''
-                    <div class="feed-card card-medium">
+                    <div class="feed-card card-small">
                         <div class="card-header">
                             <div class="card-icon"><i class="bi bi-scale"></i></div>
                             <div class="card-title">Valuation</div>
                         </div>
-                        <p style="line-height: 1.6;">{analysis.get('valuation', 'N/A')}</p>
+                        <p class="card-text">{analysis.get('valuation', 'N/A')}</p>
                     </div>
                 ''', unsafe_allow_html=True)
                 
                 # Price Justification Card
                 st.markdown(f'''
-                    <div class="feed-card card-medium">
+                    <div class="feed-card card-small">
                         <div class="card-header">
                             <div class="card-icon"><i class="bi bi-cash-stack"></i></div>
                             <div class="card-title">Price Justification</div>
                         </div>
-                        <p style="line-height: 1.6;">{analysis.get('price_justification', 'N/A')}</p>
+                        <p class="card-text">{analysis.get('price_justification', 'N/A')}</p>
                     </div>
                 ''', unsafe_allow_html=True)
                 
@@ -1463,17 +1414,70 @@ def render_analysis_page():
                         ''', unsafe_allow_html=True)
                     
                     st.markdown('</div>', unsafe_allow_html=True)
+                
+                # Additional analysis cards - 3 per row
+                st.markdown('<div class="card-grid">', unsafe_allow_html=True)
+                
+                if analysis.get("volatility"):
+                    st.markdown(f'''
+                        <div class="feed-card card-small">
+                            <div class="card-header">
+                                <div class="card-icon"><i class="bi bi-exclamation-triangle"></i></div>
+                                <div class="card-title">Volatility Alert</div>
+                            </div>
+                            <p class="card-text">{analysis.get('volatility')}</p>
+                        </div>
+                    ''', unsafe_allow_html=True)
+                
+                if analysis.get("market_comparison"):
+                    st.markdown(f'''
+                        <div class="feed-card card-small">
+                            <div class="card-header">
+                                <div class="card-icon"><i class="bi bi-bar-chart-line"></i></div>
+                                <div class="card-title">Market Comparison</div>
+                            </div>
+                            <p class="card-text">{analysis.get('market_comparison')}</p>
+                        </div>
+                    ''', unsafe_allow_html=True)
+                
+                if analysis.get("sentiment_trend"):
+                    st.markdown(f'''
+                        <div class="feed-card card-small">
+                            <div class="card-header">
+                                <div class="card-icon"><i class="bi bi-graph-up"></i></div>
+                                <div class="card-title">Sentiment Trend</div>
+                            </div>
+                            <p class="card-text">{analysis.get('sentiment_trend')}</p>
+                        </div>
+                    ''', unsafe_allow_html=True)
+                
+                st.markdown('</div>', unsafe_allow_html=True)
+                
+                # Detailed Justification (Full Width)
+                if analysis.get("justification"):
+                    st.markdown(f'''
+                        <div class="feed-card card-full">
+                            <div class="card-header">
+                                <div class="card-icon"><i class="bi bi-file-text"></i></div>
+                                <div class="card-title">Detailed Justification</div>
+                            </div>
+                            <p class="card-text">{analysis.get('justification')}</p>
+                        </div>
+                    ''', unsafe_allow_html=True)
     
     st.markdown('</div>', unsafe_allow_html=True)  # Close content-feed
 
 
 def render_floating_toolbar():
-    """Render the floating toolbar with search and settings"""
+    """Render the floating toolbar - ALWAYS STICKY"""
     
-    # Create columns for the toolbar
-    col1, col2, col3 = st.columns([6, 1, 1])
+    # Create a container for the toolbar that's always at the bottom
+    st.markdown('<div class="toolbar-wrapper">', unsafe_allow_html=True)
     
-    with col1:
+    # Create columns for layout
+    cols = st.columns([6, 1, 1])
+    
+    with cols[0]:
         ticker_input = st.text_input(
             "Search Stock",
             placeholder="Enter ASX ticker (e.g., WOW, BHP)",
@@ -1481,62 +1485,44 @@ def render_floating_toolbar():
             key="ticker_toolbar"
         )
     
-    with col2:
+    with cols[1]:
         if st.button("🔍", key="search_btn", help="Analyze Stock"):
             if ticker_input:
                 st.session_state.selected_ticker = format_ticker_for_australia(ticker_input)
                 st.session_state.show_analysis = True
                 st.rerun()
     
-    with col3:
+    with cols[2]:
         if st.button("⚙️", key="settings_btn", help="Settings"):
-            st.session_state.show_settings_modal = not st.session_state.show_settings_modal
-            st.rerun()
-
-
-def render_settings_modal():
-    """Render settings modal dialog"""
+            # Toggle settings modal
+            with st.expander("Settings", expanded=True):
+                owns_stock = st.checkbox(
+                    "I already own this stock",
+                    value=st.session_state.user_settings["owns_stock"],
+                    key="owns_stock_checkbox"
+                )
+                st.session_state.user_settings["owns_stock"] = owns_stock
+                
+                if owns_stock:
+                    purchase_price = st.number_input(
+                        "Purchase Price ($)",
+                        min_value=0.0,
+                        value=st.session_state.user_settings["purchase_price"],
+                        step=0.01,
+                        key="purchase_price_input"
+                    )
+                    st.session_state.user_settings["purchase_price"] = purchase_price
+                    
+                    quantity = st.number_input(
+                        "Quantity",
+                        min_value=0,
+                        value=st.session_state.user_settings["quantity"],
+                        step=1,
+                        key="quantity_input"
+                    )
+                    st.session_state.user_settings["quantity"] = quantity
     
-    st.markdown('<div class="modal-overlay active" id="settingsModal">', unsafe_allow_html=True)
-    st.markdown('''
-        <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">Stock Settings</div>
-            </div>
-    ''', unsafe_allow_html=True)
-    
-    owns_stock = st.checkbox(
-        "I already own this stock",
-        value=st.session_state.user_settings["owns_stock"],
-        key="owns_stock_checkbox"
-    )
-    st.session_state.user_settings["owns_stock"] = owns_stock
-    
-    if owns_stock:
-        purchase_price = st.number_input(
-            "Purchase Price ($)",
-            min_value=0.0,
-            value=st.session_state.user_settings["purchase_price"],
-            step=0.01,
-            key="purchase_price_input"
-        )
-        st.session_state.user_settings["purchase_price"] = purchase_price
-        
-        quantity = st.number_input(
-            "Quantity",
-            min_value=0,
-            value=st.session_state.user_settings["quantity"],
-            step=1,
-            key="quantity_input"
-        )
-        st.session_state.user_settings["quantity"] = quantity
-    
-    if st.button("Close", key="close_modal"):
-        st.session_state.show_settings_modal = False
-        st.rerun()
-    
-    st.markdown('</div></div>', unsafe_allow_html=True)
-
+    st.markdown('</div>', unsafe_allow_html=True)
 
 
 if __name__ == "__main__":
