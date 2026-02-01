@@ -1,15 +1,21 @@
-import streamlit as st
+from flask import Flask, request, jsonify, send_from_directory
+from flask_cors import CORS
 import requests
 import trafilatura
 import yfinance as yf
 from ddgs import DDGS
-import os
 import time
 from urllib.parse import urlparse
+import os
 
-# ---------------- CONFIG ----------------
-GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
+app = Flask(__name__)
+CORS(app)
 
+# ============================================
+# CONFIGURATION
+# ============================================
+
+GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")  # Add your API key here or set environment variable
 GROQ_MODEL = "openai/gpt-oss-120b"
 GROQ_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions"
 
@@ -27,35 +33,45 @@ BLOCKED_DOMAINS = (
     "theage.com.au",  # The Age (paywall)
 )
 
-# ---------------- HELPERS ----------------
-def search_news(query, max_results=50):
-    """Search for news articles with Australian focus"""
-    links = []
-    with DDGS() as ddgs:
-        # Add Australian market context to search
-        search_query = f"{query} ASX Australian stock market"
-        for r in ddgs.news(search_query, max_results=max_results):
-            url = r.get("url")
-            if url and url not in links:
-                links.append(url)
-    return links
-
+# ============================================
+# UTILITY FUNCTIONS
+# ============================================
 
 def is_blocked_domain(url):
+    """Check if URL is from a blocked domain"""
     domain = urlparse(url).netloc.lower()
     return any(bad in domain for bad in BLOCKED_DOMAINS)
 
 
-def crawl_article(url):
+def search_news_articles(ticker, max_results=50):
+    """
+    Search for news articles about the stock
+    Returns list of URLs
+    """
+    links = []
+    try:
+        with DDGS() as ddgs:
+            search_query = f"{ticker} ASX Australian stock market"
+            for r in ddgs.news(search_query, max_results=max_results):
+                url = r.get("url")
+                if url and url not in links:
+                    links.append(url)
+        return links
+    except Exception as e:
+        print(f"Error searching news: {e}")
+        return []
+
+
+def crawl_single_article(url):
+    """
+    Crawl a single article and extract text
+    Returns text content or None
+    """
     try:
         if is_blocked_domain(url):
             return None
 
-        resp = requests.get(
-            url,
-            headers=HEADERS,
-            timeout=20
-        )
+        resp = requests.get(url, headers=HEADERS, timeout=20)
 
         if resp.status_code != 200 or len(resp.text) < 2000:
             return None
@@ -71,39 +87,55 @@ def crawl_article(url):
 
         return None
 
-    except Exception:
+    except Exception as e:
+        print(f"Error crawling {url}: {e}")
         return None
 
 
-def get_stock_price(ticker):
-    """Get stock price for Australian stocks"""
+def get_stock_price_data(ticker):
+    """
+    Get current stock price for ASX ticker
+    Returns (price, full_ticker) or (None, None)
+    """
     try:
-        # For ASX stocks, yfinance requires .AX suffix
+        # Add .AX suffix for ASX stocks
         if not ticker.endswith('.AX'):
-            ticker = f"{ticker}.AX"
-        
-        stock = yf.Ticker(ticker)
-        data = stock.history(period="1d")
-        if data.empty:
-            return None, ticker
-        return round(float(data["Close"].iloc[-1]), 2), ticker
-    except Exception:
-        return None, ticker
+            full_ticker = f"{ticker}.AX"
+        else:
+            full_ticker = ticker
+
+        stock = yf.Ticker(full_ticker)
+        hist = stock.history(period="1d")
+
+        if hist.empty:
+            return None, None
+
+        price = round(float(hist["Close"].iloc[-1]), 2)
+        return price, full_ticker
+
+    except Exception as e:
+        print(f"Error fetching stock price: {e}")
+        return None, None
 
 
-def analyze_with_groq(news_text, current_price, ticker, purchase_price=None):
-    """Analyze stock with optional purchase price for buy/hold/sell recommendation"""
-    
+def analyze_with_ai(news_text, price, ticker, purchase_price=None):
+    """
+    Analyze stock news with AI and provide recommendations
+    Returns analysis text
+    """
+    if not GROQ_API_KEY:
+        return "Error: GROQ_API_KEY not configured. Please add your API key."
+
+    # Build the prompt based on whether user owns the stock
     if purchase_price:
-        gain_loss = current_price - purchase_price
-        gain_loss_pct = ((current_price - purchase_price) / purchase_price) * 100
-        
-        prompt = f"""
-You are an expert Australian financial analyst specializing in ASX stocks.
+        gain_loss = price - purchase_price
+        gain_loss_pct = ((price - purchase_price) / purchase_price) * 100
+
+        prompt = f"""You are an expert Australian financial analyst specializing in ASX stocks.
 
 Stock: {ticker}
-Current Price: ${current_price} AUD
-Your Purchase Price: ${purchase_price} AUD
+Current Price: ${price:.2f} AUD
+Your Purchase Price: ${purchase_price:.2f} AUD
 Current Gain/Loss: ${gain_loss:.2f} AUD ({gain_loss_pct:+.2f}%)
 
 Recent News Articles:
@@ -112,21 +144,19 @@ Recent News Articles:
 Tasks:
 1. Sentiment Analysis: (Positive / Negative / Neutral)
 2. News Impact: Does the recent news justify the current price level?
-3. Investment Recommendation: Based on your purchase price of ${purchase_price} and the current news:
+3. Investment Recommendation: Based on your purchase price of ${purchase_price:.2f} and the current news:
    - Should you BUY MORE shares at current price?
    - Should you HOLD your position?
    - Should you SELL to lock in gains/cut losses?
 4. Rationale: Provide 3-4 key points supporting your recommendation
 5. Risk Assessment: What are the main risks to consider?
 
-Respond in clear, structured format suitable for Australian investors.
-"""
+Respond in clear, structured format suitable for Australian investors."""
     else:
-        prompt = f"""
-You are an expert Australian financial analyst specializing in ASX stocks.
+        prompt = f"""You are an expert Australian financial analyst specializing in ASX stocks.
 
 Stock: {ticker}
-Current Price: ${current_price} AUD
+Current Price: ${price:.2f} AUD
 
 Recent News Articles:
 {news_text[:4000]}
@@ -138,8 +168,7 @@ Tasks:
 4. Key Insights: Provide 3-4 actionable insights for Australian investors
 5. Risk Assessment: What are the main risks to consider?
 
-Respond in clear, structured format suitable for Australian investors.
-"""
+Respond in clear, structured format suitable for Australian investors."""
 
     headers = {
         "Authorization": f"Bearer {GROQ_API_KEY}",
@@ -163,217 +192,307 @@ Respond in clear, structured format suitable for Australian investors.
         data = response.json()
 
         if "choices" not in data:
-            return (
-                "⚠️ Groq API did not return a valid completion.\n\n"
-                f"Response:\n{data}"
-            )
+            return f"Error: Invalid API response - {data}"
 
         return data["choices"][0]["message"]["content"]
 
     except Exception as e:
-        return f"⚠️ Groq API call failed: {str(e)}"
+        return f"Error calling Groq API: {str(e)}"
 
 
-# ---------------- STREAMLIT UI ----------------
-st.set_page_config(page_title="ASX Stock Analyzer", layout="wide")
+# ============================================
+# API ENDPOINTS
+# ============================================
 
-st.title("📈 Australian Stock Market Analyzer")
-st.caption("ASX-focused analysis • News intelligence • Investment recommendations")
+@app.route('/')
+def serve_frontend():
+    """Serve the HTML frontend"""
+    return send_from_directory('.', 'index.html')
 
-# Input section
-col1, col2 = st.columns([2, 1])
 
-with col1:
-    ticker = st.text_input(
-        "Enter ASX Stock Ticker (e.g. CBA, BHP, CSL, WBC)",
-        placeholder="CBA"
-    )
+@app.route('/api/stock-price', methods=['POST'])
+def api_get_stock_price():
+    """
+    Endpoint to get stock price
+    POST body: { "ticker": "CBA" }
+    Returns: { "ticker": "CBA.AX", "price": 123.45 }
+    """
+    data = request.json
+    ticker = data.get('ticker', '').strip().upper()
 
-with col2:
-    own_stock = st.checkbox("I own this stock")
+    if not ticker:
+        return jsonify({'error': 'Ticker required'}), 400
 
-purchase_price = None
-if own_stock:
-    purchase_price = st.number_input(
-        "Enter your purchase price (AUD)",
-        min_value=0.01,
-        step=0.01,
-        format="%.2f",
-        help="Enter the price you bought the stock at to get personalized buy/hold/sell recommendations"
-    )
+    price, full_ticker = get_stock_price_data(ticker)
 
-if st.button("Analyze") and ticker:
-    ticker = ticker.strip().upper()
+    if price is None:
+        return jsonify({'error': 'Could not fetch stock data. Please check the ticker symbol.'}), 404
 
-    # ---- PRICE ----
-    with st.spinner("Fetching live ASX stock price..."):
-        price, full_ticker = get_stock_price(ticker)
+    return jsonify({
+        'ticker': full_ticker,
+        'price': price,
+        'success': True
+    })
 
-    if not price:
-        st.error("❌ Could not fetch stock price. Check ticker symbol (ASX stocks only).")
-        st.stop()
 
-    st.success(f"💰 Current Price: ${price} AUD")
-    
+@app.route('/api/search-news', methods=['POST'])
+def api_search_news():
+    """
+    Endpoint to search news articles
+    POST body: { "ticker": "CBA", "max_results": 50 }
+    Returns: { "links": [...], "count": 10 }
+    """
+    data = request.json
+    ticker = data.get('ticker', '').strip().upper()
+    max_results = data.get('max_results', 50)
+
+    if not ticker:
+        return jsonify({'error': 'Ticker required'}), 400
+
+    links = search_news_articles(ticker, max_results)
+
+    return jsonify({
+        'links': links,
+        'count': len(links),
+        'success': True
+    })
+
+
+@app.route('/api/crawl-article', methods=['POST'])
+def api_crawl_article():
+    """
+    Endpoint to crawl a single article
+    POST body: { "url": "https://..." }
+    Returns: { "success": true, "text": "...", "length": 1234 }
+    """
+    data = request.json
+    url = data.get('url', '')
+
+    if not url:
+        return jsonify({'error': 'URL required'}), 400
+
+    if is_blocked_domain(url):
+        return jsonify({
+            'error': 'Domain blocked (paywall)',
+            'success': False
+        }), 403
+
+    text = crawl_single_article(url)
+
+    if text:
+        return jsonify({
+            'success': True,
+            'text': text,
+            'length': len(text)
+        })
+    else:
+        return jsonify({
+            'error': 'Could not extract text from article',
+            'success': False
+        }), 400
+
+
+@app.route('/api/crawl-articles', methods=['POST'])
+def api_crawl_articles():
+    """
+    Endpoint to crawl multiple articles at once
+    POST body: { "urls": ["url1", "url2", ...], "max_articles": 10 }
+    Returns: { "articles": [...], "success_count": 5, "statuses": [...] }
+    """
+    data = request.json
+    urls = data.get('urls', [])
+    max_articles = data.get('max_articles', 10)
+
+    if not urls:
+        return jsonify({'error': 'URLs required'}), 400
+
+    articles = []
+    statuses = []
+
+    for i, url in enumerate(urls[:max_articles]):
+        if len(articles) >= max_articles:
+            break
+
+        text = crawl_single_article(url)
+
+        if text:
+            articles.append(text)
+            statuses.append({
+                'index': i + 1,
+                'url': url,
+                'success': True,
+                'length': len(text)
+            })
+        else:
+            statuses.append({
+                'index': i + 1,
+                'url': url,
+                'success': False,
+                'error': 'Could not extract text'
+            })
+
+        # Small delay to avoid overwhelming servers
+        time.sleep(0.5)
+
+    return jsonify({
+        'articles': articles,
+        'success_count': len(articles),
+        'total_attempted': len(statuses),
+        'statuses': statuses,
+        'success': True
+    })
+
+
+@app.route('/api/analyze', methods=['POST'])
+def api_analyze():
+    """
+    Endpoint to get AI analysis
+    POST body: { 
+        "news_text": "combined article text",
+        "price": 123.45,
+        "ticker": "CBA",
+        "purchase_price": 100.00  # optional
+    }
+    Returns: { "analysis": "...", "success": true }
+    """
+    data = request.json
+    news_text = data.get('news_text', '')
+    price = data.get('price', 0)
+    ticker = data.get('ticker', '')
+    purchase_price = data.get('purchase_price')
+
+    if not all([news_text, price, ticker]):
+        return jsonify({'error': 'Missing required fields (news_text, price, ticker)'}), 400
+
+    analysis = analyze_with_ai(news_text, price, ticker, purchase_price)
+
+    return jsonify({
+        'analysis': analysis,
+        'success': True
+    })
+
+
+@app.route('/api/full-analysis', methods=['POST'])
+def api_full_analysis():
+    """
+    Complete end-to-end analysis endpoint
+    POST body: { 
+        "ticker": "CBA",
+        "purchase_price": 100.00,  # optional
+        "max_articles": 10
+    }
+    Returns complete analysis with all data
+    """
+    data = request.json
+    ticker = data.get('ticker', '').strip().upper()
+    purchase_price = data.get('purchase_price')
+    max_articles = data.get('max_articles', 10)
+
+    if not ticker:
+        return jsonify({'error': 'Ticker required'}), 400
+
+    result = {
+        'ticker': ticker,
+        'success': False
+    }
+
+    # Step 1: Get stock price
+    price, full_ticker = get_stock_price_data(ticker)
+    if price is None:
+        result['error'] = 'Could not fetch stock price'
+        return jsonify(result), 404
+
+    result['price'] = price
+    result['full_ticker'] = full_ticker
+
+    # Step 2: Search news
+    news_links = search_news_articles(ticker, max_results=50)
+    if not news_links:
+        result['error'] = 'No news articles found'
+        return jsonify(result), 404
+
+    result['news_links'] = news_links
+    result['news_count'] = len(news_links)
+
+    # Step 3: Crawl articles
+    articles = []
+    crawl_statuses = []
+
+    for i, url in enumerate(news_links[:max_articles]):
+        if len(articles) >= max_articles:
+            break
+
+        text = crawl_single_article(url)
+
+        if text:
+            articles.append(text)
+            crawl_statuses.append({
+                'index': i + 1,
+                'url': url,
+                'success': True,
+                'length': len(text)
+            })
+        else:
+            crawl_statuses.append({
+                'index': i + 1,
+                'url': url,
+                'success': False
+            })
+
+        time.sleep(0.5)
+
+    if not articles:
+        result['error'] = 'Could not extract content from any articles'
+        result['crawl_statuses'] = crawl_statuses
+        return jsonify(result), 400
+
+    result['articles_extracted'] = len(articles)
+    result['crawl_statuses'] = crawl_statuses
+
+    # Step 4: AI Analysis
+    combined_text = "\n\n".join(articles)
+    analysis = analyze_with_ai(combined_text, price, ticker, purchase_price)
+
+    result['analysis'] = analysis
+    result['success'] = True
+
+    # Add position data if purchase price provided
     if purchase_price:
         gain_loss = price - purchase_price
         gain_loss_pct = ((price - purchase_price) / purchase_price) * 100
-        
-        if gain_loss >= 0:
-            st.info(f"📊 Your Position: **Gain of ${gain_loss:.2f} ({gain_loss_pct:+.2f}%)**")
-        else:
-            st.warning(f"📊 Your Position: **Loss of ${abs(gain_loss):.2f} ({gain_loss_pct:.2f}%)**")
+        result['position'] = {
+            'purchase_price': purchase_price,
+            'gain_loss': round(gain_loss, 2),
+            'gain_loss_pct': round(gain_loss_pct, 2)
+        }
 
-    # ---- SEARCH ----
-    with st.spinner("Searching Australian financial news..."):
-        links = search_news(ticker)
+    return jsonify(result)
 
-    if not links:
-        st.error("❌ No news links found.")
-        st.stop()
 
-    st.subheader("📰 Discovered News Links")
-    for l in links[:15]:
-        st.markdown(f"- {l}")
+@app.route('/health', methods=['GET'])
+def health_check():
+    """Health check endpoint"""
+    return jsonify({
+        'status': 'healthy',
+        'groq_api_configured': bool(GROQ_API_KEY)
+    })
 
-    # ---- ADAPTIVE CRAWLING (10 articles) ----
-    st.subheader("📄 Crawled Articles")
 
-    successful_articles = []
-    attempted = 0
+# ============================================
+# MAIN
+# ============================================
 
-    for link in links:
-        if len(successful_articles) >= 10:  # Changed from 5 to 10
-            break
-
-        attempted += 1
-        with st.spinner(f"Extracting article {attempted}..."):
-            text = crawl_article(link)
-
-        if text:
-            successful_articles.append(text)
-            st.success(f"✅ Article {attempted}: Successfully extracted ({len(text)} chars)")
-        else:
-            st.warning(f"❌ Article {attempted}: Blocked or failed to extract")
-
-        time.sleep(0.8)
-
-    if not successful_articles:
-        st.error("❌ Could not extract content from any source.")
-        st.stop()
-
-    st.info(f"📚 Successfully extracted **{len(successful_articles)}** articles for analysis")
+if __name__ == '__main__':
+    print("=" * 60)
+    print("ASX Stock Intelligence Backend Server")
+    print("=" * 60)
+    print(f"GROQ API Key configured: {bool(GROQ_API_KEY)}")
+    print(f"Server starting on http://localhost:5000")
+    print("=" * 60)
     
-    combined_text = "\n\n".join(successful_articles)
-
-    # ---- LLM ----
     if not GROQ_API_KEY:
-        st.error("❌ GROQ_API_KEY not set. Please set your API key in environment variables.")
-        st.stop()
-
-    st.subheader("🧠 AI Analysis")
-    with st.spinner("Analyzing news sentiment and generating recommendations..."):
-        result = analyze_with_groq(combined_text, price, ticker, purchase_price)
-
-    st.markdown("### 🧠 Expert Analysis")
-    st.markdown(result)
-
-
-# ---------------- ASX TOP STOCKS DASHBOARD ----------------
-st.divider()
-st.subheader("📊 ASX Market Snapshot: Top Australian Stocks")
-
-# Top ASX stocks by market cap
-TOP_ASX_STOCKS = ["CBA.AX", "BHP.AX", "CSL.AX", "NAB.AX", "WBC.AX", 
-                  "ANZ.AX", "WES.AX", "MQG.AX", "FMG.AX", "RIO.AX"]
-
-@st.cache_data(ttl=900)
-def load_stock_history(tickers):
-    data = {}
-    for t in tickers:
-        try:
-            hist = yf.Ticker(t).history(period="6mo")
-            if not hist.empty:
-                data[t] = hist
-        except:
-            continue
-    return data
-
-stock_data = load_stock_history(TOP_ASX_STOCKS)
-
-if stock_data:
-    c1, c2 = st.columns(2)
-
-    # 1️⃣ Line chart – Price trends
-    with c1:
-        st.markdown("**1. Price Trends (6 months)**")
-        st.line_chart({k.replace('.AX', ''): v["Close"] for k, v in stock_data.items()})
-
-    # 2️⃣ Area chart – Volume
-    with c2:
-        st.markdown("**2. Trading Volume (6 months)**")
-        st.area_chart({k.replace('.AX', ''): v["Volume"] for k, v in stock_data.items()})
-
-    # 3️⃣ Bar chart – Latest Close
-    st.markdown("**3. Latest Closing Prices (AUD)**")
-    latest_prices = {
-        k.replace('.AX', ''): float(v["Close"].iloc[-1]) for k, v in stock_data.items()
-    }
-    st.bar_chart(latest_prices)
-
-    # 4️⃣ Bar chart – % Change (7d)
-    st.markdown("**4. 7-Day % Change**")
-    pct_change = {
-        k.replace('.AX', ''): round(((v["Close"].iloc[-1] / v["Close"].iloc[-7]) - 1) * 100, 2)
-        for k, v in stock_data.items() if len(v) >= 7
-    }
-    st.bar_chart(pct_change)
-
-    # 5️⃣ Line chart – Big 4 Banks
-    st.markdown("**5. Big 4 Banks Comparison (CBA, NAB, WBC, ANZ)**")
-    banks = {}
-    for ticker in ["CBA.AX", "NAB.AX", "WBC.AX", "ANZ.AX"]:
-        if ticker in stock_data:
-            banks[ticker.replace('.AX', '')] = stock_data[ticker]["Close"]
-    if banks:
-        st.line_chart(banks)
-
-    # 6️⃣ Area chart – BHP momentum
-    st.markdown("**6. BHP Momentum (Close Price)**")
-    if "BHP.AX" in stock_data:
-        st.area_chart(stock_data["BHP.AX"]["Close"])
-
-    # 7️⃣ Line chart – Mining stocks volatility
-    st.markdown("**7. Mining Stocks Volatility (BHP, RIO, FMG)**")
-    mining = {}
-    for ticker in ["BHP.AX", "RIO.AX", "FMG.AX"]:
-        if ticker in stock_data:
-            mining[ticker.replace('.AX', '')] = stock_data[ticker]["High"] - stock_data[ticker]["Low"]
-    if mining:
-        st.line_chart(mining)
-
-    # 8️⃣ Bar chart – Average Volume
-    st.markdown("**8. Average Daily Volume**")
-    avg_volume = {
-        k.replace('.AX', ''): int(v["Volume"].mean()) for k, v in stock_data.items()
-    }
-    st.bar_chart(avg_volume)
-
-    # 9️⃣ Line chart – CSL growth
-    st.markdown("**9. CSL Growth Curve**")
-    if "CSL.AX" in stock_data:
-        st.line_chart(stock_data["CSL.AX"]["Close"])
-
-    # 🔟 Line chart – Financial Services
-    st.markdown("**10. Financial Services Performance (MQG vs WES)**")
-    finance = {}
-    for ticker in ["MQG.AX", "WES.AX"]:
-        if ticker in stock_data:
-            finance[ticker.replace('.AX', '')] = stock_data[ticker]["Close"]
-    if finance:
-        st.line_chart(finance)
-else:
-    st.warning("Unable to load ASX market data. Please check your internet connection.")
-
-st.divider()
-st.caption("💡 Tip: Enable 'I own this stock' and enter your purchase price for personalized buy/hold/sell recommendations")
+        print("⚠️  WARNING: GROQ_API_KEY not set!")
+        print("   Set it as environment variable or edit the code")
+        print("=" * 60)
+    
+    app.run(debug=True, port=5000, host='0.0.0.0')
